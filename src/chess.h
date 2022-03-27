@@ -9,6 +9,7 @@ struct ChessPiece {
     olc::Sprite* sprPPieces;
     olc::Decal* decPPieces;
     bool Pressed;
+    bool Moved;
 };
 
 struct Turn {

@@ -1,0 +1,6 @@
+1. castle
+2. checkmate
+3. draw
+4. pawn to *
+
+if((((((mX == GameState[pieceSelected].PositionX + 1 || mX == GameState[pieceSelected].PositionX - 1) && mX == GameState[i].PositionX) && mY == GameState[i].PositionY) && mY == GameState[pieceSelected].PositionY - (playerTurn + 1) * 2 - 3) ||  ((mX == GameState[pieceSelected].PositionX && ((mY != GameState[i].PositionY || mX != GameState[i].PositionX) && (mY == GameState[pieceSelected].PositionY - ((playerTurn + 1) * 2 - 3) || ( GameState[pieceSelected].PositionY == abs(((playerTurn + 1) * (playerTurn + 1) * (playerTurn + 1)) - 2) && mY == GameState[pieceSelected].PositionY - (((playerTurn + 1) * 2 - 3) * 2)))))))&& (GameState[i].PositionX != GameState[pieceSelected].PositionX || GameState[i].PositionY != GameState[pieceSelected].PositionY - ((playerTurn + 1) * 2 - 3)))
