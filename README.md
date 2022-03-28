@@ -1,5 +1,4 @@
 # MAKiTChess 0.6.1
----
 This script is still WiP, the documentation will be available soon.
 
 # ChangeLog:
