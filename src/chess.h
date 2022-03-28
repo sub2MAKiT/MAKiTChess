@@ -1,6 +1,15 @@
 #include "engine/olcPixelGameEngine.h"
 #include <vector>
 
+#ifdef DEBUGCHESS
+#define DEBUGVALUE printf;
+#define DEBUG(x)                                                \
+printf_s("\n\033[%dm[%d]" x "\033[0m\n",int((rand() % 6) + 1 + floor(float(((rand() % 2) + 1)*1.5)) * 30),int((rand() % 6) + 1 + floor(float(((rand() % 2) + 1)*1.5)) * 30));
+#else
+#define DEBUGVALUE(...)
+#define DEBUG(x)
+#endif
+
 struct ChessPiece {
     char Colour;
     char Piece;
@@ -22,7 +31,7 @@ struct checkCheck{
     int pY;
 };
 
-class ChessBotH {
+class ChessBotI {
 public:
     std::vector<ChessPiece> piecesCreator();
     Turn loadPlayer(int player);

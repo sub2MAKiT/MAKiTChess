@@ -1,6 +1,6 @@
 #include "chess.h"
 
-std::vector<ChessPiece> ChessBotH::piecesCreator()
+std::vector<ChessPiece> ChessBotI::piecesCreator()
 {
     std::vector<ChessPiece> FinalPiece;
     for(int i = 0; i < 8; i += 1)
@@ -43,7 +43,7 @@ std::vector<ChessPiece> ChessBotH::piecesCreator()
     return FinalPiece;
 }
 
-Turn ChessBotH::loadPlayer(int player)
+Turn ChessBotI::loadPlayer(int player)
 {
     Turn Temp = {};
     if(player == 0)
