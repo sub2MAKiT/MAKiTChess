@@ -58,3 +58,14 @@ Turn ChessBotI::loadPlayer(int player)
     }
     return Temp;
 }
+
+void ChessBotI::reloadPiece(ChessPiece &chessPiece)
+{
+    std::string Temp = "./src/textures/";
+    Temp.push_back(chessPiece.Colour);
+    Temp.append("/");
+    Temp.push_back(chessPiece.Piece);
+    Temp.append(".png");
+    chessPiece.sprPPieces = new olc::Sprite(Temp);
+    chessPiece.decPPieces = new olc::Decal(chessPiece.sprPPieces);
+}

@@ -35,4 +35,5 @@ class ChessBotI {
 public:
     std::vector<ChessPiece> piecesCreator();
     Turn loadPlayer(int player);
+    void reloadPiece(ChessPiece &chessPiece);
 };
