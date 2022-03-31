@@ -35,7 +35,6 @@ public:
     ChessBotI chessInitiaing;
     int gameEnding = 0;
     bool itIsTimeToMoveForWhite;
-    bool isDraw = false;
 
 public:
 	bool OnUserCreate() override
@@ -70,7 +69,6 @@ public:
         DrawDecal({0.0f, 0.0f},decBoard, {4.0f, 4.0f});
         for(int i = 0; i < Pieces.size(); i++)
         {
-
             DrawDecal({float(Pieces[i].PositionX * 32), float(Pieces[i].PositionY * 32)},Pieces[i].decPPieces, {4.0f, 4.0f}, {255,floor(1 /(Pieces[i].Pressed + 1)) * 255,floor(1 /(Pieces[i].Pressed + 1)) * 255});
         }
         if(gameEnding == 0)
@@ -83,11 +81,6 @@ public:
             printf("{GAME ENDED} - Draw\n");
             Clear(olc::WHITE);
             DrawString({100,128},"DRAW");
-            printf("%d",isDraw);
-            for(int i = 1; i < 1000000; i++)
-            {
-                printf("%c",7);
-            }
         } else if(gameEnding == 2)
         {
             printf("{GAME ENDED} - Won\n");
@@ -117,6 +110,7 @@ public:
         bool pawnCanChange = false;
         WhiteCanMove = playerTurn;
         bool BlackCanMove = !playerTurn;
+        bool isDraw = true;
         for(int i = 0; i < GameState.size(); i++)
         {
                 if(GameState[i].Piece == 'P' && (GameState[i].PositionY == 0 || GameState[i].PositionY == 7))
@@ -156,7 +150,7 @@ public:
             {
                 DEBUGVALUE("?");
                 if(!pawnCanChange)
-                    moveCorrect = chessC.moveSim(GameState, playerTurn, player1, player2, mX, mY, pieceSelected, true, Castle, selected, castleRook);
+                    moveCorrect = chessC.moveSim(GameState, playerTurn, player1, player2, mX, mY, pieceSelected, true, Castle, castleRook);
                 moved = true;
             }
             if(moved)
@@ -240,11 +234,10 @@ public:
                 }
                 DEBUG("Finished Gameloop");
             }
-
             int kingPos;
             for(int i = 0; i < GameState.size();i++)
             {
-                if(WhiteCanMove)
+                if(playerTurn)
                 {
                     if(GameState[i].Piece == 'K' && GameState[i].Colour == 'W')
                         kingPos = i;
@@ -254,107 +247,128 @@ public:
                 }
             }
             bool Garbage = false;
-            bool isChecked = !chessC.CheckCheck(GameState, playerTurn, player1, player2, GameState[kingPos].PositionX, GameState[kingPos].PositionY, Castle, selected, castleRook);
+            bool isNotChecked = true;
+            if(!chessC.CheckCheck(GameState, BlackCanMove, player1, player2, GameState[kingPos].PositionX, GameState[kingPos].PositionY, Castle, castleRook))
+                isNotChecked = false;
             DEBUG("Before end game check\n");
-            for(int i = 0;i < GameState.size(); i++)
-            {
-                if((GameState[i].Colour == 'W' && WhiteCanMove) || (GameState[i].Colour == 'B' && !WhiteCanMove))
-                {
-                    if(GameState[i].Piece == 'P')
-                    {
-                        if(chessC.moveSim(GameState, BlackCanMove, player1, player2, GameState[i].PositionX, GameState[i].PositionY - ((WhiteCanMove + 1) * 2 - 3), i, true, Garbage, selected, castleRook))
-                            isDraw = false;
-                        if(chessC.moveSim(GameState, BlackCanMove, player1, player2, GameState[i].PositionX, GameState[i].PositionY - (((WhiteCanMove + 1) * 2 - 3) * 2), i, true, Garbage, selected, castleRook))
-                            isDraw = false;
-                        if(chessC.moveSim(GameState, BlackCanMove, player1, player2, GameState[i].PositionX + 1, GameState[i].PositionY - ((WhiteCanMove + 1) * 2 - 3), i, true, Garbage, selected, castleRook))
-                            isDraw = false;
-                        if(chessC.moveSim(GameState, BlackCanMove, player1, player2, GameState[i].PositionX - 1, GameState[i].PositionY - ((WhiteCanMove + 1) * 2 - 3), i, true, Garbage, selected, castleRook))
-                            isDraw = false;
-                    }
-                    if(GameState[i].Piece == 'R')
-                    {
-                        for(int a = 0; a < 8; a++)
-                        {
-                        if(chessC.moveSim(GameState, BlackCanMove, player1, player2, GameState[i].PositionX, a, i, true, Garbage, selected, castleRook))
-                            isDraw = false;
-                        if(chessC.moveSim(GameState, BlackCanMove, player1, player2, a, GameState[i].PositionY, i, true, Garbage, selected, castleRook))
-                            isDraw = false;
-                        }
-                    }
-                    if(GameState[i].Piece == 'C')
-                    {
-                        if(chessC.moveSim(GameState, BlackCanMove, player1, player2, GameState[i].PositionX - 1, GameState[i].PositionY + 2, i, true, Garbage, selected, castleRook))
-                            isDraw = false;
-                        if(chessC.moveSim(GameState, BlackCanMove, player1, player2, GameState[i].PositionX + 1, GameState[i].PositionY + 2, i, true, Garbage, selected, castleRook))
-                            isDraw = false;
-                        if(chessC.moveSim(GameState, BlackCanMove, player1, player2, GameState[i].PositionX - 1, GameState[i].PositionY - 2, i, true, Garbage, selected, castleRook))
-                            isDraw = false;
-                        if(chessC.moveSim(GameState, BlackCanMove, player1, player2, GameState[i].PositionX + 1, GameState[i].PositionY - 2, i, true, Garbage, selected, castleRook))
-                            isDraw = false;
-                        if(chessC.moveSim(GameState, BlackCanMove, player1, player2, GameState[i].PositionX - 2, GameState[i].PositionY - 1, i, true, Garbage, selected, castleRook))
-                            isDraw = false;
-                        if(chessC.moveSim(GameState, BlackCanMove, player1, player2, GameState[i].PositionX + 2, GameState[i].PositionY - 1, i, true, Garbage, selected, castleRook))
-                            isDraw = false;
-                        if(chessC.moveSim(GameState, BlackCanMove, player1, player2, GameState[i].PositionX - 2, GameState[i].PositionY + 1, i, true, Garbage, selected, castleRook))
-                            isDraw = false;
-                        if(chessC.moveSim(GameState, BlackCanMove, player1, player2, GameState[i].PositionX + 2, GameState[i].PositionY + 1, i, true, Garbage, selected, castleRook))
-                            isDraw = false;
-                    }
-                    if(GameState[i].Piece == 'B')
-                    {
-                        for(int a = 0; a < 8; a++)
-                        {
-                            if(chessC.moveSim(GameState, BlackCanMove, player1, player2, GameState[i].PositionX - a, GameState[i].PositionY - a, i, true, Garbage, selected, castleRook))
-                                isDraw = false;
-                            if(chessC.moveSim(GameState, BlackCanMove, player1, player2, GameState[i].PositionX + a, GameState[i].PositionY - a, i, true, Garbage, selected, castleRook))
-                                isDraw = false;
-                            if(chessC.moveSim(GameState, BlackCanMove, player1, player2, GameState[i].PositionX - a, GameState[i].PositionY + a, i, true, Garbage, selected, castleRook))
-                                isDraw = false;
-                            if(chessC.moveSim(GameState, BlackCanMove, player1, player2, GameState[i].PositionX + a, GameState[i].PositionY + a, i, true, Garbage, selected, castleRook))
-                                isDraw = false;
 
-                        }
-                    }
-                    if(GameState[i].Piece == 'Q')
+            for(int i = 0; i < GameState.size(); i++)
+            {
+                for(int a = 0;a < 8; a++)
+                {
+                    for(int b = 0;b < 8; b++)
                     {
-                        for(int a = 0; a < 8; a++)
-                        {
-                            for(int b = 0; b < 8; b++)
-                            {
-                                if(chessC.moveSim(GameState, BlackCanMove, player1, player2, a, b, i, true, Garbage, selected, castleRook))
-                                    isDraw = false;
-                            }
-                        }
-                    }
-                    if(GameState[i].Piece == 'K')
-                    {
-                        if(chessC.moveSim(GameState, BlackCanMove, player1, player2, GameState[i].PositionX - 1, GameState[i].PositionY - 1, i, true, Garbage, selected, castleRook))
-                            isDraw = false;
-                        if(chessC.moveSim(GameState, BlackCanMove, player1, player2, GameState[i].PositionX - 1, GameState[i].PositionY, i, true, Garbage, selected, castleRook))
-                            isDraw = false;
-                        if(chessC.moveSim(GameState, BlackCanMove, player1, player2, GameState[i].PositionX - 1, GameState[i].PositionY + 1, i, true, Garbage, selected, castleRook))
-                            isDraw = false;
-                        if(chessC.moveSim(GameState, BlackCanMove, player1, player2, GameState[i].PositionX , GameState[i].PositionY - 1, i, true, Garbage, selected, castleRook))
-                            isDraw = false;
-                        if(chessC.moveSim(GameState, BlackCanMove, player1, player2, GameState[i].PositionX, GameState[i].PositionY + 1, i, true, Garbage, selected, castleRook))
-                            isDraw = false;
-                        if(chessC.moveSim(GameState, BlackCanMove, player1, player2, GameState[i].PositionX + 1, GameState[i].PositionY - 1, i, true, Garbage, selected, castleRook))
-                            isDraw = false;
-                        if(chessC.moveSim(GameState, BlackCanMove, player1, player2, GameState[i].PositionX + 1, GameState[i].PositionY, i, true, Garbage, selected, castleRook))
-                            isDraw = false;
-                        if(chessC.moveSim(GameState, BlackCanMove, player1, player2, GameState[i].PositionX + 1, GameState[i].PositionY + 1, i, true, Garbage, selected, castleRook))
+                        if(chessC.moveSim(GameState, playerTurn, player1, player2, a, b, i, true, Garbage, castleRook))
                             isDraw = false;
                     }
-                    Garbage = false;
                 }
             }
+
+            // ______OPTIONAL CODE... not working, no idea why.
+            // for(int i = 0;i < GameState.size(); i++)
+            // {
+            //     if((GameState[i].Colour == 'W' && WhiteCanMove) || (GameState[i].Colour == 'B' && !WhiteCanMove))
+            //     {
+            //         printf("\nall good");
+            //         if(GameState[i].Piece == 'P')
+            //         {
+            //             printf("\na pawn");
+            //                 chessC.moveSim(GameState, playerTurn, player1, player2, mX,                     mY,                                                    pieceSelected, true, Castle, castleRook);
+            //             if(!chessC.moveSim(GameState, playerTurn, player1, player2, GameState[i].PositionX, GameState[i].PositionY - ((WhiteCanMove + 1) * 2 - 3), i, true, Garbage, castleRook))
+            //                 isDraw = false;
+            //             if(!chessC.moveSim(GameState, playerTurn, player1, player2, GameState[i].PositionX, GameState[i].PositionY - (((WhiteCanMove + 1) * 2 - 3) * 2), i, true, Garbage, castleRook))
+            //                 isDraw = false;
+            //             if(!chessC.moveSim(GameState, playerTurn, player1, player2, GameState[i].PositionX + 1, GameState[i].PositionY - ((WhiteCanMove + 1) * 2 - 3), i, true, Garbage, castleRook))
+            //                 isDraw = false;
+            //             if(!chessC.moveSim(GameState, playerTurn, player1, player2, GameState[i].PositionX - 1, GameState[i].PositionY - ((WhiteCanMove + 1) * 2 - 3), i, true, Garbage, castleRook))
+            //                 isDraw = false;
+            //         }
+            //         if(GameState[i].Piece == 'R')
+            //         {
+            //             for(int a = 0; a < 8; a++)
+            //             {
+            //             printf("\nrook loop");
+            //             if(!chessC.moveSim(GameState, playerTurn, player1, player2, GameState[i].PositionX, a, i, true, Garbage, castleRook))
+            //                 isDraw = false;
+            //             if(!chessC.moveSim(GameState, playerTurn, player1, player2, a, GameState[i].PositionY, i, true, Garbage, castleRook))
+            //                 isDraw = false;
+            //             }
+            //         }
+            //         if(GameState[i].Piece == 'C')
+            //         {
+            //             if(!chessC.moveSim(GameState, playerTurn, player1, player2, GameState[i].PositionX - 1, GameState[i].PositionY + 2, i, true, Garbage, castleRook))
+            //                 isDraw = false;
+            //             if(!chessC.moveSim(GameState, playerTurn, player1, player2, GameState[i].PositionX + 1, GameState[i].PositionY + 2, i, true, Garbage, castleRook))
+            //                 isDraw = false;
+            //             if(!chessC.moveSim(GameState, playerTurn, player1, player2, GameState[i].PositionX - 1, GameState[i].PositionY - 2, i, true, Garbage, castleRook))
+            //                 isDraw = false;
+            //             if(!chessC.moveSim(GameState, playerTurn, player1, player2, GameState[i].PositionX + 1, GameState[i].PositionY - 2, i, true, Garbage, castleRook))
+            //                 isDraw = false;
+            //             if(!chessC.moveSim(GameState, playerTurn, player1, player2, GameState[i].PositionX - 2, GameState[i].PositionY - 1, i, true, Garbage, castleRook))
+            //                 isDraw = false;
+            //             if(!chessC.moveSim(GameState, playerTurn, player1, player2, GameState[i].PositionX + 2, GameState[i].PositionY - 1, i, true, Garbage, castleRook))
+            //                 isDraw = false;
+            //             if(!chessC.moveSim(GameState, playerTurn, player1, player2, GameState[i].PositionX - 2, GameState[i].PositionY + 1, i, true, Garbage, castleRook))
+            //                 isDraw = false;
+            //             if(!chessC.moveSim(GameState, playerTurn, player1, player2, GameState[i].PositionX + 2, GameState[i].PositionY + 1, i, true, Garbage, castleRook))
+            //                 isDraw = false;
+            //         }
+            //         if(GameState[i].Piece == 'B')
+            //         {
+            //             for(int a = 0; a < 8; a++)
+            //             {
+            //                 if(!chessC.moveSim(GameState, playerTurn, player1, player2, GameState[i].PositionX - a, GameState[i].PositionY - a, i, true, Garbage, castleRook))
+            //                     isDraw = false;
+            //                 if(!chessC.moveSim(GameState, playerTurn, player1, player2, GameState[i].PositionX + a, GameState[i].PositionY - a, i, true, Garbage, castleRook))
+            //                     isDraw = false;
+            //                 if(!chessC.moveSim(GameState, playerTurn, player1, player2, GameState[i].PositionX - a, GameState[i].PositionY + a, i, true, Garbage, castleRook))
+            //                     isDraw = false;
+            //                 if(!chessC.moveSim(GameState, playerTurn, player1, player2, GameState[i].PositionX + a, GameState[i].PositionY + a, i, true, Garbage, castleRook))
+            //                     isDraw = false;
+
+            //             }
+            //         }
+            //         if(GameState[i].Piece == 'Q')
+            //         {
+            //             for(int a = 0; a < 8; a++)
+            //             {
+            //                 for(int b = 0; b < 8; b++)
+            //                 {
+            //                     if(!chessC.moveSim(GameState, playerTurn, player1, player2, a, b, i, true, Garbage, castleRook))
+            //                         isDraw = false;
+            //                 }
+            //             }
+            //         }
+            //         if(GameState[i].Piece == 'K')
+            //         {
+            //             if(!chessC.moveSim(GameState, playerTurn, player1, player2, GameState[i].PositionX - 1, GameState[i].PositionY - 1, i, true, Garbage, castleRook))
+            //                 isDraw = false;
+            //             if(!chessC.moveSim(GameState, playerTurn, player1, player2, GameState[i].PositionX - 1, GameState[i].PositionY, i, true, Garbage, castleRook))
+            //                 isDraw = false;
+            //             if(!chessC.moveSim(GameState, playerTurn, player1, player2, GameState[i].PositionX - 1, GameState[i].PositionY + 1, i, true, Garbage, castleRook))
+            //                 isDraw = false;
+            //             if(!chessC.moveSim(GameState, playerTurn, player1, player2, GameState[i].PositionX , GameState[i].PositionY - 1, i, true, Garbage, castleRook))
+            //                 isDraw = false;
+            //             if(!chessC.moveSim(GameState, playerTurn, player1, player2, GameState[i].PositionX, GameState[i].PositionY + 1, i, true, Garbage, castleRook))
+            //                 isDraw = false;
+            //             if(!chessC.moveSim(GameState, playerTurn, player1, player2, GameState[i].PositionX + 1, GameState[i].PositionY - 1, i, true, Garbage, castleRook))
+            //                 isDraw = false;
+            //             if(!chessC.moveSim(GameState, playerTurn, player1, player2, GameState[i].PositionX + 1, GameState[i].PositionY, i, true, Garbage, castleRook))
+            //                 isDraw = false;
+            //             if(!chessC.moveSim(GameState, playerTurn, player1, player2, GameState[i].PositionX + 1, GameState[i].PositionY + 1, i, true, Garbage, castleRook))
+            //                 isDraw = false;
+            //         }
+            //         Garbage = false;
+            //     }
+            //     printf("isDraw: %d",isDraw);
+            // }
             DEBUG("After end game check\n");
-            if (!isDraw && !isChecked) {
+            if (!isDraw) {
                 gameEnding = 0;
-            }else if(isDraw && !isChecked)
+            }else if(isDraw && isNotChecked)
             {
-                gameEnding = 1;       
-            } else if(isDraw && isChecked) {
+                gameEnding = 1;
+            } else if(isDraw && !isNotChecked) {
                 gameEnding = 2;
             }
             DEBUG("After end game check\n");

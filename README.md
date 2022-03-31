@@ -19,3 +19,5 @@ This script is still WiP, the documentation will be available soon.
    - Cleaned up the script, and optimized it.
 ### 0.7.0
    - Added a basic GUI for the pawn change.
+### 0.8.0
+   - Added an ending, gameplay element complete.

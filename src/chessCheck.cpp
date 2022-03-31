@@ -1,6 +1,6 @@
 #include "chessCheck.h"
 
-bool ChessCheck::moveSim(std::vector<ChessPiece> GameState, bool &playerTurn, Turn player1, Turn player2, int mX, int mY, int pieceSelected, bool saverFromLoop, bool &Castle, bool &selected, int &castleRook)
+bool ChessCheck::moveSim(std::vector<ChessPiece> GameState, bool playerTurn, Turn player1, Turn player2, int mX, int mY, int pieceSelected, bool saverFromLoop, bool &Castle, int &castleRook)
 {
     std::vector<ChessPiece> GameStateCopy = GameState;
     bool moveCorrect = false;
@@ -292,7 +292,7 @@ bool ChessCheck::moveSim(std::vector<ChessPiece> GameState, bool &playerTurn, Tu
         }
         if(!somethingInTheWayThatIsNotABatmanReference)
         {
-            moveCorrect = CheckCheck(GameStateCopy, playerTurn, player1, player2, GameStateCopy[pieceSelected].PositionX, GameStateCopy[pieceSelected].PositionY, Castle, selected, castleRook);
+            moveCorrect = CheckCheck(GameStateCopy, playerTurn, player1, player2, GameStateCopy[pieceSelected].PositionX, GameStateCopy[pieceSelected].PositionY, Castle, castleRook);
             Castle = true;
             return moveCorrect;
         } else {
@@ -344,14 +344,14 @@ bool ChessCheck::moveSim(std::vector<ChessPiece> GameState, bool &playerTurn, Tu
     DEBUGVALUE("\nmoved before cc, %d\n",moveCorrect);
     if(moveCorrect)
         if(saverFromLoop)
-            moveCorrect = CheckCheck(GameStateCopy, playerTurn, player1, player2, GameStateCopy[kingPos].PositionX, GameStateCopy[kingPos].PositionY, Castle, selected, castleRook);
+            moveCorrect = CheckCheck(GameStateCopy, playerTurn, player1, player2, GameStateCopy[kingPos].PositionX, GameStateCopy[kingPos].PositionY, Castle, castleRook);
     DEBUG("Returning Correct Move");
     if(moveCorrect)
         GameState[pieceSelected].Moved = true;
     DEBUG("Returning Correct Move");
     return moveCorrect;
 }
-bool ChessCheck::CheckCheck(std::vector<ChessPiece> GameState, bool playerTurn, Turn player1, Turn player2, int kPX, int kPY, bool Castle, bool selected, int castleRook)
+bool ChessCheck::CheckCheck(std::vector<ChessPiece> GameState, bool playerTurn, Turn player1, Turn player2, int kPX, int kPY, bool Castle, int castleRook)
     {
         // true means no check
         bool PlayerTurn = !playerTurn;
@@ -369,7 +369,7 @@ bool ChessCheck::CheckCheck(std::vector<ChessPiece> GameState, bool playerTurn, 
         for(int i = 0; i < copyPieces.size(); i++)
         {
             DEBUGVALUE("%d",kPY);
-            if(moveSim(copyPieces, PlayerTurn, player1, player2, kPX, kPY, i, false, Castle, selected, castleRook))
+            if(moveSim(copyPieces, PlayerTurn, player1, player2, kPX, kPY, i, false, Castle, castleRook))
             {
                 DEBUGVALUE("\n%c,%c,%d",copyPieces[i].Colour, copyPieces[i].Piece,i);
                 DEBUG("found it");
