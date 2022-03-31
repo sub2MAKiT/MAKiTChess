@@ -1,4 +1,4 @@
-# MAKiTChess 0.6.1
+# MAKiTChess 0.8.0
 ---
 This script is still WiP, the documentation will be available soon.
 
