@@ -2,6 +2,11 @@
 ---
 This script is still WiP, the documentation will be available soon.
 
+# Usage:
+For now, in order to compile the code. You can use the ```build.ps1```, I would personally recommend using the ```-fast```, because it shouldn't be causing any bugs and it is making it significantly better for the AI.
+
+>In order to compile enter the folder ***MAKITCHESS*** *(the file that everything is in)* and only then execute the build.ps1, otherwise the textures won't load.
+
 # ChangeLog:
 ### 0.1.0
    - Created the board.
