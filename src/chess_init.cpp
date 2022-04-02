@@ -1,6 +1,6 @@
 #include "chess.h"
 
-std::vector<ChessPiece> ChessBotI::piecesCreator()
+std::vector<ChessPiece> ChessBotI::piecesCreator(std::string pieceName)
 {
     std::vector<ChessPiece> FinalPiece;
     for(int i = 0; i < 8; i += 1)
@@ -33,6 +33,8 @@ std::vector<ChessPiece> ChessBotI::piecesCreator()
     for(int i = 0; i < FinalPiece.size(); i++)
     {
         std::string Temp = "./src/textures/";
+        Temp.append(pieceName);
+        Temp.append("/");
         Temp.push_back(FinalPiece[i].Colour);
         Temp.append("/");
         Temp.push_back(FinalPiece[i].Piece);

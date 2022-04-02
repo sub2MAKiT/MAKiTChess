@@ -1,3 +1,4 @@
+#pragma once
 #include "chess.h"
 class ChessCheck {
 public:

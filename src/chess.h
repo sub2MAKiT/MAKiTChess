@@ -1,3 +1,4 @@
+#pragma once
 #include "engine/olcPixelGameEngine.h"
 #include <vector>
 
@@ -33,7 +34,7 @@ struct checkCheck{
 
 class ChessBotI {
 public:
-    std::vector<ChessPiece> piecesCreator();
+    std::vector<ChessPiece> piecesCreator(std::string pieceName);
     Turn loadPlayer(int player);
     void reloadPiece(ChessPiece &chessPiece);
 };

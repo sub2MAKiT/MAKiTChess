@@ -22,6 +22,8 @@ public:
     olc::Decal* decR = nullptr;
     olc::Sprite* sprC = nullptr;
     olc::Decal* decC = nullptr;
+    olc::Sprite* sprButton = nullptr;
+    olc::Decal* decButton = nullptr;
 
     std::vector<ChessPiece> Pieces = {};
     Turn Player1 = {};
@@ -35,6 +37,11 @@ public:
     ChessBotI chessInitiaing;
     int gameEnding = 0;
     bool itIsTimeToMoveForWhite;
+    bool startedTheGame = false;
+    bool backgroundColourBool = 0;
+    bool textureChanging = false;
+    bool AIChanging = false;
+    olc::vf2d piecesScale = {4.0f,4.0f};
 
 public:
 	bool OnUserCreate() override
@@ -44,16 +51,18 @@ public:
         sprPS = new olc::Sprite("./src/textures/PS.png");
         decPS = new olc::Decal(sprPS);
 
-        sprB = new olc::Sprite("./src/textures/B/B.png");
+        sprB = new olc::Sprite("./src/textures/PiecesD/B/B.png");
         decB = new olc::Decal(sprB);
-        sprC = new olc::Sprite("./src/textures/B/C.png");
+        sprC = new olc::Sprite("./src/textures/PiecesD/B/C.png");
         decC = new olc::Decal(sprC);
-        sprQ = new olc::Sprite("./src/textures/B/Q.png");
+        sprQ = new olc::Sprite("./src/textures/PiecesD/B/Q.png");
         decQ = new olc::Decal(sprQ);
-        sprR = new olc::Sprite("./src/textures/B/R.png");
+        sprR = new olc::Sprite("./src/textures/PiecesD/B/R.png");
         decR = new olc::Decal(sprR);
+        sprButton = new olc::Sprite("./src/textures/buttonSmall.jpg");
+        decButton = new olc::Decal(sprButton);
 
-        Pieces = chessInitiaing.piecesCreator();
+        Pieces = chessInitiaing.piecesCreator("PiecesD");
         Player1 = chessInitiaing.loadPlayer(0);
         Player2 = chessInitiaing.loadPlayer(1);
         DEBUG("User Created\n");
@@ -63,31 +72,74 @@ public:
 
 	bool OnUserUpdate(float fElapsedTime) override
 	{
-        Clear(olc::BLACK);
         olc::vf2d mouse = {float(GetMouseX()), float(GetMouseY())};
-        SetPixelMode(olc::Pixel::ALPHA);
-        DrawDecal({0.0f, 0.0f},decBoard, {4.0f, 4.0f});
-        for(int i = 0; i < Pieces.size(); i++)
+        bool PressedStart = false;
+        Clear(backgroundColourBool ? olc::WHITE : olc::BLACK);
+        if(!startedTheGame && !textureChanging && !AIChanging)
         {
-            DrawDecal({float(Pieces[i].PositionX * 32), float(Pieces[i].PositionY * 32)},Pieces[i].decPPieces, {4.0f, 4.0f}, {255,floor(1 /(Pieces[i].Pressed + 1)) * 255,floor(1 /(Pieces[i].Pressed + 1)) * 255});
+            if(buttonDrawer(mouse,"start",{32,20}))
+                startedTheGame = true;
+            if(buttonDrawer(mouse,"change background",{32,60}))
+                backgroundColourBool = !backgroundColourBool;
+            if(buttonDrawer(mouse,"change texture",{32,100}))
+                textureChanging = true;
+            if(buttonDrawer(mouse,"change AI",{32,140}))
+                AIChanging = true;
+            
+
+        } else if(textureChanging) {
+            DrawDecal({224.0f,0.0f},Pieces[0].decPPieces, piecesScale);
+            if(buttonDrawer(mouse,"back",{32,20}))
+                textureChanging = false;
+            if(buttonDrawer(mouse,"back",{32,20}))
+                textureChanging = false;
+            if(buttonDrawer(mouse,"Default",{32,60}))
+            {
+                Pieces.erase(Pieces.begin());
+                Pieces.shrink_to_fit();
+                Pieces = chessInitiaing.piecesCreator("PiecesD");
+                piecesScale = {4.0f,4.0f};
+            }
+            if(buttonDrawer(mouse,"High Quality",{32,100}))
+            {
+                Pieces.erase(Pieces.begin());
+                Pieces.shrink_to_fit();
+                Pieces = chessInitiaing.piecesCreator("PiecesHQ");
+                piecesScale = {0.5f,0.5f};
+            }
+
+        } else if(AIChanging) { 
+            if(buttonDrawer(mouse,"back",{32,20}))
+                AIChanging = false;
+
+        }else if(startedTheGame) {
+
+            Clear(olc::BLACK);
+            SetPixelMode(olc::Pixel::ALPHA);
+            DrawDecal({0.0f, 0.0f},decBoard, {4.0f, 4.0f});
+            for(int i = 0; i < Pieces.size(); i++)
+            {
+                DrawDecal({float(Pieces[i].PositionX * 32), float(Pieces[i].PositionY * 32)},Pieces[i].decPPieces, piecesScale, {255,floor(1 /(Pieces[i].Pressed + 1)) * 255,floor(1 /(Pieces[i].Pressed + 1)) * 255});
+            }
+            if(gameEnding == 0)
+            {
+                DEBUG("\nGameloop");
+                gameLoop(Pieces, playerTurn, Player1, Player2, mouse);
+            }
+            else if(gameEnding == 1)
+            {
+                printf("{GAME ENDED} - Draw\n");
+                Clear(olc::WHITE);
+                DrawString({100,128},"DRAW");
+            } else if(gameEnding == 2)
+            {
+                printf("{GAME ENDED} - Won\n");
+                DrawString({100,128},itIsTimeToMoveForWhite ? "White Wins":"Black Wins");
+                Clear(olc::WHITE);
+            }
+            SetPixelMode(olc::Pixel::NORMAL);
+            
         }
-        if(gameEnding == 0)
-        {
-            DEBUG("\nGameloop");
-            gameLoop(Pieces, playerTurn, Player1, Player2, mouse);
-        }
-        else if(gameEnding == 1)
-        {
-            printf("{GAME ENDED} - Draw\n");
-            Clear(olc::WHITE);
-            DrawString({100,128},"DRAW");
-        } else if(gameEnding == 2)
-        {
-            printf("{GAME ENDED} - Won\n");
-            DrawString({100,128},itIsTimeToMoveForWhite ? "White Wins":"Black Wins");
-            Clear(olc::WHITE);
-        }
-        SetPixelMode(olc::Pixel::NORMAL);
 		return true;
 	}
 
@@ -395,6 +447,19 @@ void pawnSwapper(std::vector<ChessPiece> &GameState, int pieceSelected, int mX)
     }
     chessInitiaing.reloadPiece(GameState[pieceSelected]);
 }
+
+bool buttonDrawer(olc::vf2d mouse, std::string name, olc::vf2d position)
+ {
+    bool PressedStart = false;
+    if(mouse.x > position.x && mouse.x < position.x + 32 && mouse.y > position.y && mouse.y < position.y + 16)
+        PressedStart = true;
+    DrawDecal(position,decButton, {0.125f, 0.125f}, {255,floor(1 /(PressedStart + 1)) * 255,floor(1 /(PressedStart + 1)) * 255});
+    DrawString({position.x + 40,position.y},name,backgroundColourBool ? olc::BLACK : olc::WHITE);
+
+    if(PressedStart && GetMouse(0).bPressed)
+        return true;
+    return false;
+ }
 
 };
 

@@ -26,3 +26,5 @@ For now, in order to compile the code. You can use the ```build.ps1```, I would 
    - Added a basic GUI for the pawn change.
 ### 0.8.0
    - Added an ending, gameplay element complete.
+### 0.9.0
+   - Added a functioning GUI.
