@@ -1,4 +1,4 @@
-# MAKiTChess 0.8.0
+# MAKiTChess 0.9.1
 ---
 This script is still WiP, the documentation will be available soon.
 
@@ -28,3 +28,5 @@ For now, in order to compile the code. You can use the ```build.ps1```, I would 
    - Added an ending, gameplay element complete.
 ### 0.9.0
    - Added a functioning GUI.
+### 0.9.1
+   - Added a GUI for the AI, and added the *Basic AI*.

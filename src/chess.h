@@ -1,6 +1,5 @@
 #pragma once
 #include "engine/olcPixelGameEngine.h"
-#include <vector>
 
 #ifdef DEBUGCHESS
 #define DEBUGVALUE printf;
@@ -10,6 +9,11 @@ printf_s("\n\033[%dm[%d]" x "\033[0m\n",int((rand() % 6) + 1 + floor(float(((ran
 #define DEBUGVALUE(...)
 #define DEBUG(x)
 #endif
+
+struct AIInfo {
+    int depth;
+    char option; // B - basic | D - default | S - smart | A - advanced
+};
 
 struct ChessPiece {
     char Colour;
@@ -25,6 +29,7 @@ struct ChessPiece {
 struct Turn {
     bool Player;
     bool RealPlayer;
+    AIInfo AI;
 };
 
 struct checkCheck{
@@ -36,5 +41,5 @@ class ChessBotI {
 public:
     std::vector<ChessPiece> piecesCreator(std::string pieceName);
     Turn loadPlayer(int player);
-    void reloadPiece(ChessPiece &chessPiece);
+    void reloadPiece(ChessPiece &chessPiece, char mode);
 };

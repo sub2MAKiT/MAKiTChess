@@ -1,5 +1,5 @@
 #define OLC_PGE_APPLICATION
-#include "chessCheck.h"
+#include "chessAI.h"
 
 class ChessBot : public olc::PixelGameEngine
 {
@@ -35,6 +35,7 @@ public:
     bool Castle;
     ChessCheck chessC;
     ChessBotI chessInitiaing;
+    chessAI ChessAI;
     int gameEnding = 0;
     bool itIsTimeToMoveForWhite;
     bool startedTheGame = false;
@@ -42,6 +43,10 @@ public:
     bool textureChanging = false;
     bool AIChanging = false;
     olc::vf2d piecesScale = {4.0f,4.0f};
+    char piecesMode = 'D';
+    int tempDepthAI = 1;
+    char tempTypeAI = 'D';
+    bool tempPlayerRealAI = true;
 
 public:
 	bool OnUserCreate() override
@@ -74,7 +79,7 @@ public:
 	{
         olc::vf2d mouse = {float(GetMouseX()), float(GetMouseY())};
         bool PressedStart = false;
-        Clear(backgroundColourBool ? olc::WHITE : olc::BLACK);
+        Clear(backgroundColourBool ? olc::WHITE : olc::DARK_BLUE);
         if(!startedTheGame && !textureChanging && !AIChanging)
         {
             if(buttonDrawer(mouse,"start",{32,20}))
@@ -99,6 +104,7 @@ public:
                 Pieces.shrink_to_fit();
                 Pieces = chessInitiaing.piecesCreator("PiecesD");
                 piecesScale = {4.0f,4.0f};
+                piecesMode = 'D';
             }
             if(buttonDrawer(mouse,"High Quality",{32,100}))
             {
@@ -106,11 +112,70 @@ public:
                 Pieces.shrink_to_fit();
                 Pieces = chessInitiaing.piecesCreator("PiecesHQ");
                 piecesScale = {0.5f,0.5f};
+                piecesMode = 'H';
             }
 
         } else if(AIChanging) { 
             if(buttonDrawer(mouse,"back",{32,20}))
                 AIChanging = false;
+            std::string TempAITypeString = "AI type: ";
+            TempAITypeString.push_back(tempTypeAI);
+            if(buttonDrawer(mouse,TempAITypeString,{32,60}))
+            {
+                if(tempTypeAI == 'A')
+                    tempTypeAI = 'B';
+                else if(tempTypeAI == 'S')
+                    tempTypeAI = 'A';
+                else if(tempTypeAI == 'D')
+                    tempTypeAI = 'S';
+                else if(tempTypeAI == 'B')
+                    tempTypeAI = 'D';
+            }
+            std::string TempAIDepthString;
+            TempAIDepthString = "AI depth: " + std::to_string(tempDepthAI);
+            if(buttonDrawer(mouse,TempAIDepthString,{32,100}))
+            {
+                tempDepthAI++;
+                if(tempDepthAI > 10)
+                    tempDepthAI = 1;
+            }
+            std::string TempAIRealPlayerString;
+            if(tempPlayerRealAI)
+                TempAIRealPlayerString = "player real: yes";
+            else
+                TempAIRealPlayerString = "player real: no";
+            if(buttonDrawer(mouse,TempAIRealPlayerString,{32,140}))
+            {
+                tempPlayerRealAI = !tempPlayerRealAI;
+            }
+            std::string TempAIPlayer1;
+            TempAIPlayer1.append("Is real: ");
+            TempAIPlayer1.append(Player1.RealPlayer ? "yes" : "no");
+            TempAIPlayer1.append("\nDepth: ");
+            TempAIPlayer1.append(std::to_string(Player1.AI.depth));
+            TempAIPlayer1.append("\nType: ");
+            TempAIPlayer1.push_back(Player1.AI.option);
+            if(buttonDrawer(mouse,TempAIPlayer1,{2,200}))
+            {
+                Player1.RealPlayer = tempPlayerRealAI;
+                Player1.AI.depth = tempDepthAI;
+                Player1.AI.option = tempTypeAI;
+            }
+
+            std::string TempAIPlayer2;
+            TempAIPlayer2.append("Is real: ");
+            TempAIPlayer2.append(Player2.RealPlayer ? "yes" : "no");
+            TempAIPlayer2.append("\nDepth: ");
+            TempAIPlayer2.append(std::to_string(Player2.AI.depth));
+            TempAIPlayer2.append("\nType: ");
+            TempAIPlayer2.push_back(Player2.AI.option);
+            if(buttonDrawer(mouse,TempAIPlayer2,{128,200}))
+            {
+                Player2.RealPlayer = tempPlayerRealAI;
+                Player2.AI.depth = tempDepthAI;
+                Player2.AI.option = tempTypeAI;
+            }
+
 
         }else if(startedTheGame) {
 
@@ -123,7 +188,6 @@ public:
             }
             if(gameEnding == 0)
             {
-                DEBUG("\nGameloop");
                 gameLoop(Pieces, playerTurn, Player1, Player2, mouse);
             }
             else if(gameEnding == 1)
@@ -145,9 +209,57 @@ public:
 
     void gameLoop(std::vector<ChessPiece> &GameState, bool &playerTurn, Turn player1, Turn player2, olc::vf2d mouse)
     {
+        GameState.shrink_to_fit();
+        Turn ChosenPlayer;
+        AIMove AIMove;
+        if(playerTurn)
+        {
+            ChosenPlayer = player1;
+        } else {
+            ChosenPlayer = player2;
+        }
         Castle = false;
-        int mX = floor(mouse.x / 32);
-        int mY = floor(mouse.y / 32);
+        int mX = 2000;
+        int mY = 2000;
+        bool moved = false;
+        if(ChosenPlayer.RealPlayer)
+        {
+            mX = floor(mouse.x / 32);
+            mY = floor(mouse.y / 32);
+        } else {
+            AIMove = ChessAI.AIMOVE(ChosenPlayer,GameState);
+            pieceSelected = AIMove.pieceSelected;
+            GameState[AIMove.pieceSelected].PositionX = AIMove.mX;
+            GameState[AIMove.pieceSelected].PositionY = AIMove.mY;
+            for(int i = 0; i < GameState.size(); i++)
+                {
+                    for(int a = 0; a < GameState.size(); a++)
+                    {
+                        if(a != i)
+                            if(GameState[i].PositionX == GameState[a].PositionX && GameState[i].PositionY == GameState[a].PositionY)
+                                if(GameState[i].Colour != GameState[a].Colour)
+                                    if(GameState[i].Colour == 'B')
+                                    {
+                                        if(!playerTurn)
+                                            GameState.erase(GameState.begin()+a);
+                                        else
+                                            GameState.erase(GameState.begin()+i);
+                                    } else {
+                                        if(playerTurn)
+                                            GameState.erase(GameState.begin()+a);
+                                        else
+                                            GameState.erase(GameState.begin()+i);
+                                    }
+                    }
+                }
+            playerTurn = !playerTurn;
+        }
+        // printf("\n\n\n\n\n\n\n\n");
+        // printf("\n\n\n%d",pieceSelected);
+        // printf("\n\n\n%d",mY);
+        // printf("\n\n\n%d",mX);
+        // printf("\n\n\n\n\n\n\n\n");
+
         char correctColour;
         bool WhiteCanMove;
         bool moveCorrect = false;
@@ -155,7 +267,6 @@ public:
         bool move2 = false;
         bool move3 = false; 
         bool moveDone = false;
-        bool moved = false;
         int castleRX;
         int castleKX;
         int pawnToChange;
@@ -179,6 +290,7 @@ public:
         }
         if(pawnCanChange)
         {
+
             pawnSwapper(GameState,pawnToChange, mX);
         }
         if(!selected && !pawnCanChange)
@@ -202,7 +314,7 @@ public:
             {
                 DEBUGVALUE("?");
                 if(!pawnCanChange)
-                    moveCorrect = chessC.moveSim(GameState, playerTurn, player1, player2, mX, mY, pieceSelected, true, Castle, castleRook);
+                    moveCorrect = chessC.moveSim(GameState, playerTurn, mX, mY, pieceSelected, true, Castle, castleRook);
                 moved = true;
             }
             if(moved)
@@ -222,64 +334,57 @@ public:
                         GameState[castleRook].PositionX = GameState[pieceSelected].PositionX + (abs(4 - GameState[pieceSelected].PositionX)/(4 - GameState[pieceSelected].PositionX));
                         GameState[pieceSelected].Moved = true;
                         GameState[castleRook].Moved = true;
+                        DEBUG("Moved the piece");
                     }
                     GameState[pieceSelected].Pressed = false;
                     DEBUG("After castle");
                     DEBUGVALUE("\nMoved to %d",GameState[pieceSelected].PositionX);
                     DEBUGVALUE("\nMoved to %d\n",GameState[pieceSelected].PositionY);
                     selected = false;
-                    if(playerTurn)
-                    {
-                        playerTurn = false;
-                    } else {
-                        playerTurn = true;
-                    }
                     for(int i = 0; i < GameState.size(); i++)
                     {
                         for(int a = 0; a < GameState.size(); a++)
                         {
                             if(a != i)
                             {
-                                if(GameState[i].PositionX == GameState[a].PositionX)
+                                if(GameState[i].PositionX == GameState[a].PositionX && GameState[i].PositionY == GameState[a].PositionY)
                                 {
-                                    if(GameState[i].PositionY == GameState[a].PositionY)
+                                    if(GameState[i].Colour != GameState[a].Colour)
                                     {
-                                        if(GameState[i].Colour != GameState[a].Colour)
+                                        if(GameState[i].Colour == 'B')
                                         {
-                                            if(GameState[i].Colour == 'B')
+                                            if(!WhiteCanMove)
                                             {
-                                                if(!WhiteCanMove)
-                                                {
-                                                    GameState.erase(GameState.begin()+a);
-                                                } else {
-                                                    GameState.erase(GameState.begin()+i);
-                                                }
+                                                GameState.erase(GameState.begin()+a);
                                             } else {
-                                                if(WhiteCanMove)
-                                                {
-                                                    GameState.erase(GameState.begin()+a);
-                                                } else {
-                                                    GameState.erase(GameState.begin()+i);
-                                                }
+                                                GameState.erase(GameState.begin()+i);
                                             }
                                         } else {
-                                            if(Castle)
+                                            if(WhiteCanMove)
                                             {
-                                                if(playerTurn)
-                                                {
-                                                    playerTurn = false;
-                                                } else {
-                                                    playerTurn = true;
-                                                }
-                                                GameState[castleRook].PositionX = castleRX;
-                                                GameState[pieceSelected].PositionX = castleKX;
+                                                GameState.erase(GameState.begin()+a);
+                                            } else {
+                                                GameState.erase(GameState.begin()+i);
                                             }
+                                        }
+                                    } else {
+                                        if(Castle)
+                                        {
+                                            if(playerTurn)
+                                            {
+                                                playerTurn = false;
+                                            } else {
+                                                playerTurn = true;
+                                            }
+                                            GameState[castleRook].PositionX = castleRX;
+                                            GameState[pieceSelected].PositionX = castleKX;
                                         }
                                     }
                                 }
                             }
                         }
                     }
+                    playerTurn = !playerTurn;
                 } else {
                     GameState[pieceSelected].Pressed = false;
                     selected = false;
@@ -300,7 +405,7 @@ public:
             }
             bool Garbage = false;
             bool isNotChecked = true;
-            if(!chessC.CheckCheck(GameState, BlackCanMove, player1, player2, GameState[kingPos].PositionX, GameState[kingPos].PositionY, Castle, castleRook))
+            if(!chessC.CheckCheck(GameState, BlackCanMove, GameState[kingPos].PositionX, GameState[kingPos].PositionY, Castle, castleRook))
                 isNotChecked = false;
             DEBUG("Before end game check\n");
 
@@ -310,11 +415,13 @@ public:
                 {
                     for(int b = 0;b < 8; b++)
                     {
-                        if(chessC.moveSim(GameState, playerTurn, player1, player2, a, b, i, true, Garbage, castleRook))
-                            isDraw = false;
+                        if(mX != 2000)
+                            if(chessC.moveSim(GameState, playerTurn, a, b, i, true, Garbage, castleRook))
+                                isDraw = false;
                     }
                 }
             }
+            DEBUG("After moveSim");
 
             // ______OPTIONAL CODE... not working, no idea why.
             // for(int i = 0;i < GameState.size(); i++)
@@ -444,8 +551,8 @@ void pawnSwapper(std::vector<ChessPiece> &GameState, int pieceSelected, int mX)
             GameState[pieceSelected].Piece = 'B';
         if(mX == 5)
             GameState[pieceSelected].Piece = 'Q';
+    chessInitiaing.reloadPiece(GameState[pieceSelected], piecesMode);
     }
-    chessInitiaing.reloadPiece(GameState[pieceSelected]);
 }
 
 bool buttonDrawer(olc::vf2d mouse, std::string name, olc::vf2d position)

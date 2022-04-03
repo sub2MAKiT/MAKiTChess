@@ -52,18 +52,25 @@ Turn ChessBotI::loadPlayer(int player)
     {
         Temp.Player = true;
         Temp.RealPlayer = true;
+        Temp.AI.depth = 0;
     }
         if(player == 1)
     {
         Temp.Player = false;
-        Temp.RealPlayer = true;
+        Temp.RealPlayer = false;
+        Temp.AI.depth = 1;
     }
+    Temp.AI.option = 'D';
     return Temp;
 }
 
-void ChessBotI::reloadPiece(ChessPiece &chessPiece)
+void ChessBotI::reloadPiece(ChessPiece &chessPiece, char mode)
 {
     std::string Temp = "./src/textures/";
+    if(mode == 'D')
+        Temp.append("PiecesD/");
+    else if(mode == 'H')
+        Temp.append("PiecesHQ/");
     Temp.push_back(chessPiece.Colour);
     Temp.append("/");
     Temp.push_back(chessPiece.Piece);
