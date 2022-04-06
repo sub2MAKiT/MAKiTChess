@@ -1,4 +1,4 @@
-# MAKiTChess 0.9.1
+# MAKiTChess 0.9.2
 ---
 This script is still WiP, the documentation will be available soon.
 
@@ -30,3 +30,5 @@ For now, in order to compile the code. You can use the ```build.ps1```, I would 
    - Added a functioning GUI.
 ### 0.9.1
    - Added a GUI for the AI, and added the *Basic AI*.
+### 0.9.2
+   - Changed the **gameLoop**, so it is no longer dependent on the user input, AI is playing with the same rules

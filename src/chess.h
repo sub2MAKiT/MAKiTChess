@@ -37,7 +37,7 @@ struct checkCheck{
     int pY;
 };
 
-class ChessBotI {
+class chessBotI {
 public:
     std::vector<ChessPiece> piecesCreator(std::string pieceName);
     Turn loadPlayer(int player);

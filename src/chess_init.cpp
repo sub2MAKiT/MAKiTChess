@@ -1,6 +1,6 @@
 #include "chess.h"
 
-std::vector<ChessPiece> ChessBotI::piecesCreator(std::string pieceName)
+std::vector<ChessPiece> chessBotI::piecesCreator(std::string pieceName)
 {
     std::vector<ChessPiece> FinalPiece;
     for(int i = 0; i < 8; i += 1)
@@ -45,7 +45,7 @@ std::vector<ChessPiece> ChessBotI::piecesCreator(std::string pieceName)
     return FinalPiece;
 }
 
-Turn ChessBotI::loadPlayer(int player)
+Turn chessBotI::loadPlayer(int player)
 {
     Turn Temp = {};
     if(player == 0)
@@ -64,7 +64,7 @@ Turn ChessBotI::loadPlayer(int player)
     return Temp;
 }
 
-void ChessBotI::reloadPiece(ChessPiece &chessPiece, char mode)
+void chessBotI::reloadPiece(ChessPiece &chessPiece, char mode)
 {
     std::string Temp = "./src/textures/";
     if(mode == 'D')

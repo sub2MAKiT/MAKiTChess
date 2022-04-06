@@ -1,19 +1,18 @@
 #define OLC_PGE_APPLICATION
-#include "chessAI.h"
+#include "chessGUI.h"
 
 class ChessBot : public olc::PixelGameEngine
 {
 public:
 	ChessBot()
 	{
-		sAppName = "ChessBot";
+		sAppName = "MAKiTChess";
 	}
 
     olc::Sprite* sprBoard = nullptr;
     olc::Decal* decBoard = nullptr;
     olc::Sprite* sprPS = nullptr;
     olc::Decal* decPS = nullptr;
-
     olc::Sprite* sprQ = nullptr;
     olc::Decal* decQ = nullptr;
     olc::Sprite* sprB = nullptr;
@@ -30,14 +29,9 @@ public:
     Turn Player2 = {};
     bool playerTurn = true;
     bool selected = false;
-    int pieceSelected;
+    int pieceSelected = 69;
     int castleRook;
-    bool Castle;
-    ChessCheck chessC;
-    ChessBotI chessInitiaing;
-    chessAI ChessAI;
     int gameEnding = 0;
-    bool itIsTimeToMoveForWhite;
     bool startedTheGame = false;
     bool backgroundColourBool = 0;
     bool textureChanging = false;
@@ -47,6 +41,12 @@ public:
     int tempDepthAI = 1;
     char tempTypeAI = 'D';
     bool tempPlayerRealAI = true;
+    bool menu = true;
+
+    chessCheck ChessC;
+    chessBotI chessInitiating;
+    chessAI ChessAI;
+    chessGUI ChessGUI;
 
 public:
 	bool OnUserCreate() override
@@ -55,7 +55,6 @@ public:
         decBoard = new olc::Decal(sprBoard);
         sprPS = new olc::Sprite("./src/textures/PS.png");
         decPS = new olc::Decal(sprPS);
-
         sprB = new olc::Sprite("./src/textures/PiecesD/B/B.png");
         decB = new olc::Decal(sprB);
         sprC = new olc::Sprite("./src/textures/PiecesD/B/C.png");
@@ -66,10 +65,9 @@ public:
         decR = new olc::Decal(sprR);
         sprButton = new olc::Sprite("./src/textures/buttonSmall.jpg");
         decButton = new olc::Decal(sprButton);
-
-        Pieces = chessInitiaing.piecesCreator("PiecesD");
-        Player1 = chessInitiaing.loadPlayer(0);
-        Player2 = chessInitiaing.loadPlayer(1);
+        Pieces = chessInitiating.piecesCreator("PiecesD");
+        Player1 = chessInitiating.loadPlayer(0);
+        Player2 = chessInitiating.loadPlayer(1);
         DEBUG("User Created\n");
         
 		return true;
@@ -80,126 +78,128 @@ public:
         olc::vf2d mouse = {float(GetMouseX()), float(GetMouseY())};
         bool PressedStart = false;
         Clear(backgroundColourBool ? olc::WHITE : olc::DARK_BLUE);
-        if(!startedTheGame && !textureChanging && !AIChanging)
+        if(menu)
         {
-            if(buttonDrawer(mouse,"start",{32,20}))
-                startedTheGame = true;
-            if(buttonDrawer(mouse,"change background",{32,60}))
-                backgroundColourBool = !backgroundColourBool;
-            if(buttonDrawer(mouse,"change texture",{32,100}))
-                textureChanging = true;
-            if(buttonDrawer(mouse,"change AI",{32,140}))
-                AIChanging = true;
-            
+            if(!textureChanging && !AIChanging)
+            {
+                if(buttonDrawer(mouse,"start",{32,20}, backgroundColourBool))
+                    menu = false;
+                if(buttonDrawer(mouse,"change background",{32,60}, backgroundColourBool))
+                    backgroundColourBool = !backgroundColourBool;
+                if(buttonDrawer(mouse,"change texture",{32,100}, backgroundColourBool))
+                    textureChanging = true;
+                if(buttonDrawer(mouse,"change AI",{32,140}, backgroundColourBool))
+                    AIChanging = true;
+                
 
-        } else if(textureChanging) {
-            DrawDecal({224.0f,0.0f},Pieces[0].decPPieces, piecesScale);
-            if(buttonDrawer(mouse,"back",{32,20}))
-                textureChanging = false;
-            if(buttonDrawer(mouse,"back",{32,20}))
-                textureChanging = false;
-            if(buttonDrawer(mouse,"Default",{32,60}))
-            {
-                Pieces.erase(Pieces.begin());
-                Pieces.shrink_to_fit();
-                Pieces = chessInitiaing.piecesCreator("PiecesD");
-                piecesScale = {4.0f,4.0f};
-                piecesMode = 'D';
-            }
-            if(buttonDrawer(mouse,"High Quality",{32,100}))
-            {
-                Pieces.erase(Pieces.begin());
-                Pieces.shrink_to_fit();
-                Pieces = chessInitiaing.piecesCreator("PiecesHQ");
-                piecesScale = {0.5f,0.5f};
-                piecesMode = 'H';
-            }
+            } else if(textureChanging) {
+                DrawDecal({224.0f,0.0f},Pieces[0].decPPieces, piecesScale);
+                if(buttonDrawer(mouse,"back",{32,20}, backgroundColourBool))
+                    textureChanging = false;
+                if(buttonDrawer(mouse,"back",{32,20}, backgroundColourBool))
+                    textureChanging = false;
+                if(buttonDrawer(mouse,"Default",{32,60}, backgroundColourBool))
+                {
+                    Pieces.erase(Pieces.begin());
+                    Pieces.shrink_to_fit();
+                    Pieces = chessInitiating.piecesCreator("PiecesD");
+                    piecesScale = {4.0f,4.0f};
+                    piecesMode = 'D';
+                }
+                if(buttonDrawer(mouse,"High Quality",{32,100}, backgroundColourBool))
+                {
+                    Pieces.erase(Pieces.begin());
+                    Pieces.shrink_to_fit();
+                    Pieces = chessInitiating.piecesCreator("PiecesHQ");
+                    piecesScale = {0.5f,0.5f};
+                    piecesMode = 'H';
+                }
 
-        } else if(AIChanging) { 
-            if(buttonDrawer(mouse,"back",{32,20}))
-                AIChanging = false;
-            std::string TempAITypeString = "AI type: ";
-            TempAITypeString.push_back(tempTypeAI);
-            if(buttonDrawer(mouse,TempAITypeString,{32,60}))
-            {
-                if(tempTypeAI == 'A')
-                    tempTypeAI = 'B';
-                else if(tempTypeAI == 'S')
-                    tempTypeAI = 'A';
-                else if(tempTypeAI == 'D')
-                    tempTypeAI = 'S';
-                else if(tempTypeAI == 'B')
-                    tempTypeAI = 'D';
-            }
-            std::string TempAIDepthString;
-            TempAIDepthString = "AI depth: " + std::to_string(tempDepthAI);
-            if(buttonDrawer(mouse,TempAIDepthString,{32,100}))
-            {
-                tempDepthAI++;
-                if(tempDepthAI > 10)
-                    tempDepthAI = 1;
-            }
-            std::string TempAIRealPlayerString;
-            if(tempPlayerRealAI)
-                TempAIRealPlayerString = "player real: yes";
-            else
-                TempAIRealPlayerString = "player real: no";
-            if(buttonDrawer(mouse,TempAIRealPlayerString,{32,140}))
-            {
-                tempPlayerRealAI = !tempPlayerRealAI;
-            }
-            std::string TempAIPlayer1;
-            TempAIPlayer1.append("Is real: ");
-            TempAIPlayer1.append(Player1.RealPlayer ? "yes" : "no");
-            TempAIPlayer1.append("\nDepth: ");
-            TempAIPlayer1.append(std::to_string(Player1.AI.depth));
-            TempAIPlayer1.append("\nType: ");
-            TempAIPlayer1.push_back(Player1.AI.option);
-            if(buttonDrawer(mouse,TempAIPlayer1,{2,200}))
-            {
-                Player1.RealPlayer = tempPlayerRealAI;
-                Player1.AI.depth = tempDepthAI;
-                Player1.AI.option = tempTypeAI;
-            }
+            } else if(AIChanging) { 
+                if(buttonDrawer(mouse,"back",{32,20}, backgroundColourBool))
+                    AIChanging = false;
+                std::string TempAITypeString = "AI type: ";
+                TempAITypeString.push_back(tempTypeAI);
+                if(buttonDrawer(mouse,TempAITypeString,{32,60}, backgroundColourBool))
+                {
+                    if(tempTypeAI == 'A')
+                        tempTypeAI = 'B';
+                    else if(tempTypeAI == 'S')
+                        tempTypeAI = 'A';
+                    else if(tempTypeAI == 'D')
+                        tempTypeAI = 'S';
+                    else if(tempTypeAI == 'B')
+                        tempTypeAI = 'D';
+                }
+                std::string TempAIDepthString;
+                TempAIDepthString = "AI depth: " + std::to_string(tempDepthAI);
+                if(buttonDrawer(mouse,TempAIDepthString,{32,100}, backgroundColourBool))
+                {
+                    tempDepthAI++;
+                    if(tempDepthAI > 10)
+                        tempDepthAI = 1;
+                }
+                std::string TempAIRealPlayerString;
+                if(tempPlayerRealAI)
+                    TempAIRealPlayerString = "player real: yes";
+                else
+                    TempAIRealPlayerString = "player real: no";
+                if(buttonDrawer(mouse,TempAIRealPlayerString,{32,140}, backgroundColourBool))
+                {
+                    tempPlayerRealAI = !tempPlayerRealAI;
+                }
+                std::string TempAIPlayer1;
+                TempAIPlayer1.append("Is real: ");
+                TempAIPlayer1.append(Player1.RealPlayer ? "yes" : "no");
+                TempAIPlayer1.append("\nDepth: ");
+                TempAIPlayer1.append(std::to_string(Player1.AI.depth));
+                TempAIPlayer1.append("\nType: ");
+                TempAIPlayer1.push_back(Player1.AI.option);
+                if(buttonDrawer(mouse,TempAIPlayer1,{2,200}, backgroundColourBool))
+                {
+                    Player1.RealPlayer = tempPlayerRealAI;
+                    Player1.AI.depth = tempDepthAI;
+                    Player1.AI.option = tempTypeAI;
+                }
 
-            std::string TempAIPlayer2;
-            TempAIPlayer2.append("Is real: ");
-            TempAIPlayer2.append(Player2.RealPlayer ? "yes" : "no");
-            TempAIPlayer2.append("\nDepth: ");
-            TempAIPlayer2.append(std::to_string(Player2.AI.depth));
-            TempAIPlayer2.append("\nType: ");
-            TempAIPlayer2.push_back(Player2.AI.option);
-            if(buttonDrawer(mouse,TempAIPlayer2,{128,200}))
-            {
-                Player2.RealPlayer = tempPlayerRealAI;
-                Player2.AI.depth = tempDepthAI;
-                Player2.AI.option = tempTypeAI;
+                std::string TempAIPlayer2;
+                TempAIPlayer2.append("Is real: ");
+                TempAIPlayer2.append(Player2.RealPlayer ? "yes" : "no");
+                TempAIPlayer2.append("\nDepth: ");
+                TempAIPlayer2.append(std::to_string(Player2.AI.depth));
+                TempAIPlayer2.append("\nType: ");
+                TempAIPlayer2.push_back(Player2.AI.option);
+                if(buttonDrawer(mouse,TempAIPlayer2,{128,200}, backgroundColourBool))
+                {
+                    Player2.RealPlayer = tempPlayerRealAI;
+                    Player2.AI.depth = tempDepthAI;
+                    Player2.AI.option = tempTypeAI;
+                }
             }
-
-
-        }else if(startedTheGame) {
-
-            Clear(olc::BLACK);
-            SetPixelMode(olc::Pixel::ALPHA);
-            DrawDecal({0.0f, 0.0f},decBoard, {4.0f, 4.0f});
-            for(int i = 0; i < Pieces.size(); i++)
-            {
-                DrawDecal({float(Pieces[i].PositionX * 32), float(Pieces[i].PositionY * 32)},Pieces[i].decPPieces, piecesScale, {255,floor(1 /(Pieces[i].Pressed + 1)) * 255,floor(1 /(Pieces[i].Pressed + 1)) * 255});
-            }
+        }
+        else
+        {
             if(gameEnding == 0)
             {
-                gameLoop(Pieces, playerTurn, Player1, Player2, mouse);
+                Clear(olc::BLACK);
+                SetPixelMode(olc::Pixel::ALPHA);
+                DrawDecal({0.0f, 0.0f},decBoard, {4.0f, 4.0f});
+                for(int i = 0; i < Pieces.size(); i++)
+                {
+                    DrawDecal({float(Pieces[i].PositionX * 32), float(Pieces[i].PositionY * 32)},Pieces[i].decPPieces, piecesScale, {255,floor(1 /(Pieces[i].Pressed + 1)) * 255,floor(1 /(Pieces[i].Pressed + 1)) * 255});
+                }
+                int mX = floor(mouse.x / 32);
+                int mY = floor(mouse.y / 32);
+                gameLoop(Pieces, playerTurn, Player1, Player2, mX, mY);
             }
             else if(gameEnding == 1)
             {
-                printf("{GAME ENDED} - Draw\n");
-                Clear(olc::WHITE);
+                Clear(olc::BLACK);
                 DrawString({100,128},"DRAW");
             } else if(gameEnding == 2)
             {
-                printf("{GAME ENDED} - Won\n");
-                DrawString({100,128},itIsTimeToMoveForWhite ? "White Wins":"Black Wins");
-                Clear(olc::WHITE);
+                DrawString({100,128},playerTurn ? "White Wins":"Black Wins");
+                Clear(olc::BLACK);
             }
             SetPixelMode(olc::Pixel::NORMAL);
             
@@ -207,207 +207,176 @@ public:
 		return true;
 	}
 
-    void gameLoop(std::vector<ChessPiece> &GameState, bool &playerTurn, Turn player1, Turn player2, olc::vf2d mouse)
+    void gameLoop(std::vector<ChessPiece> &GameState, bool &playerTurn, Turn player1, Turn player2, int mmX, int mmY)
     {
         GameState.shrink_to_fit();
         Turn ChosenPlayer;
         AIMove AIMove;
+        // MovementChecking
+        int mX;
+        int mY;
+        int castleRX;
+        int castleKX;
+        bool pawnToChange = false;
+        bool selectedAPiece = false;
+        // GameEnding 
+        bool virtualPress = false;
+        bool isDraw = true;
+        bool isNotChecked = true;
+        bool Castle = false;
+        int kingPos;
+
+
+        // Check Which turn it is
         if(playerTurn)
         {
             ChosenPlayer = player1;
         } else {
             ChosenPlayer = player2;
         }
-        Castle = false;
-        int mX = 2000;
-        int mY = 2000;
-        bool moved = false;
+
+
+        // Assing the movement
         if(ChosenPlayer.RealPlayer)
         {
-            mX = floor(mouse.x / 32);
-            mY = floor(mouse.y / 32);
+            mX = mmX;
+            mY = mmY;
         } else {
             AIMove = ChessAI.AIMOVE(ChosenPlayer,GameState);
+            selected = true;
             pieceSelected = AIMove.pieceSelected;
-            GameState[AIMove.pieceSelected].PositionX = AIMove.mX;
-            GameState[AIMove.pieceSelected].PositionY = AIMove.mY;
-            for(int i = 0; i < GameState.size(); i++)
-                {
-                    for(int a = 0; a < GameState.size(); a++)
-                    {
-                        if(a != i)
-                            if(GameState[i].PositionX == GameState[a].PositionX && GameState[i].PositionY == GameState[a].PositionY)
-                                if(GameState[i].Colour != GameState[a].Colour)
-                                    if(GameState[i].Colour == 'B')
-                                    {
-                                        if(!playerTurn)
-                                            GameState.erase(GameState.begin()+a);
-                                        else
-                                            GameState.erase(GameState.begin()+i);
-                                    } else {
-                                        if(playerTurn)
-                                            GameState.erase(GameState.begin()+a);
-                                        else
-                                            GameState.erase(GameState.begin()+i);
-                                    }
-                    }
-                }
-            playerTurn = !playerTurn;
+            mX = AIMove.mX;
+            mY = AIMove.mY;
+            virtualPress = true;
         }
-        // printf("\n\n\n\n\n\n\n\n");
-        // printf("\n\n\n%d",pieceSelected);
-        // printf("\n\n\n%d",mY);
-        // printf("\n\n\n%d",mX);
-        // printf("\n\n\n\n\n\n\n\n");
 
-        char correctColour;
-        bool WhiteCanMove;
-        bool moveCorrect = false;
-        bool move1 = false;
-        bool move2 = false;
-        bool move3 = false; 
-        bool moveDone = false;
-        int castleRX;
-        int castleKX;
-        int pawnToChange;
-        bool pawnCanChange = false;
-        WhiteCanMove = playerTurn;
-        bool BlackCanMove = !playerTurn;
-        bool isDraw = true;
+        
+
+        // Check if the pawn can change
         for(int i = 0; i < GameState.size(); i++)
         {
-                if(GameState[i].Piece == 'P' && (GameState[i].PositionY == 0 || GameState[i].PositionY == 7))
-                {
-                    pawnCanChange = true;
-                    pawnToChange = i;
-                }
+            if(GameState[i].Colour == (playerTurn ? 'W' : 'B') && GameState[i].Piece == 'P' && GameState[i].PositionY == abs(playerTurn - 1) * 7)
+            {
+                pawnToChange = true;
+                pawnSwapper(GameState,i, (virtualPress ? 5 : int(floor(GetMouseX()/32))),virtualPress);
+            }
         }
-        if(player1.Player == playerTurn)
-        {
-            correctColour = 'W';
-        } else {
-            correctColour = 'B';
-        }
-        if(pawnCanChange)
-        {
 
-            pawnSwapper(GameState,pawnToChange, mX);
-        }
-        if(!selected && !pawnCanChange)
+
+        // If the current player is a player (:DDD) then allow them to choose the piece to move
+        if(!selected && !pawnToChange)
         {
             if(GetMouse(0).bPressed)
             {
                 for(int i = 0; i < GameState.size(); i++)
                 {
-                    if((mX == GameState[i].PositionX && mY == GameState[i].PositionY) && GameState[i].Colour == correctColour)
+                    if((mX == GameState[i].PositionX && mY == GameState[i].PositionY) && GameState[i].Colour == (playerTurn ? 'W' : 'B'))// 87 vs 66
                     {
+                        printf("X: %d, Y: %d\n", mX,mY);
+                        printf("PX: %d, PY: %d\n", GameState[i].PositionX,GameState[i].PositionY);
                         GameState[i].Pressed = true;
-                        DEBUGVALUE("%d", selected);
-                        selected = true;
+                        selectedAPiece = true;
                         pieceSelected = i;
-                        DEBUGVALUE("%d", selected);
                     }
                 }
             }
-        } else if(selected) {
-            if(GetMouse(0).bPressed)
+        }else if(selected && !pawnToChange && (virtualPress || GetMouse(0).bPressed)) {
+
+            
+            // Check if the move is correct
+            if(ChessC.moveSim(GameState, playerTurn, mX, mY, pieceSelected, true, Castle, castleRook))
             {
-                DEBUGVALUE("?");
-                if(!pawnCanChange)
-                    moveCorrect = chessC.moveSim(GameState, playerTurn, mX, mY, pieceSelected, true, Castle, castleRook);
-                moved = true;
-            }
-            if(moved)
-            {
-                DEBUGVALUE("\nmoved, %d\n",moveCorrect);
-                if(moveCorrect)
+
+
+                // Movement handling
+                if(!Castle)
                 {
-                    if(!Castle)
+                    GameState[pieceSelected].PositionX = mX;
+                    GameState[pieceSelected].PositionY = mY;
+                    GameState[pieceSelected].Moved = true;
+                } else {
+                    castleRX = GameState[castleRook].PositionX;
+                    castleKX = GameState[pieceSelected].PositionX;
+                    GameState[pieceSelected].PositionX = ((castleRX / 7) * 4) + 2;
+                    GameState[castleRook].PositionX = GameState[pieceSelected].PositionX + (abs(4 - GameState[pieceSelected].PositionX)/(4 - GameState[pieceSelected].PositionX));
+                    GameState[pieceSelected].Moved = true;
+                    GameState[castleRook].Moved = true;
+                }
+
+
+
+                GameState[pieceSelected].Pressed = false;
+                selected = false;
+                for(int i = 0; i < GameState.size(); i++)
+                {
+                    for(int a = 0; a < GameState.size(); a++)
                     {
-                        GameState[pieceSelected].PositionX = mX;
-                        GameState[pieceSelected].PositionY = mY;
-                        GameState[pieceSelected].Moved = true;
-                    } else {
-                        castleRX = GameState[castleRook].PositionX;
-                        castleKX = GameState[pieceSelected].PositionX;
-                        GameState[pieceSelected].PositionX = ((castleRX / 7) * 4) + 2;
-                        GameState[castleRook].PositionX = GameState[pieceSelected].PositionX + (abs(4 - GameState[pieceSelected].PositionX)/(4 - GameState[pieceSelected].PositionX));
-                        GameState[pieceSelected].Moved = true;
-                        GameState[castleRook].Moved = true;
-                        DEBUG("Moved the piece");
-                    }
-                    GameState[pieceSelected].Pressed = false;
-                    DEBUG("After castle");
-                    DEBUGVALUE("\nMoved to %d",GameState[pieceSelected].PositionX);
-                    DEBUGVALUE("\nMoved to %d\n",GameState[pieceSelected].PositionY);
-                    selected = false;
-                    for(int i = 0; i < GameState.size(); i++)
-                    {
-                        for(int a = 0; a < GameState.size(); a++)
+                        if(a != i)
                         {
-                            if(a != i)
+                            if(GameState[i].PositionX == GameState[a].PositionX && GameState[i].PositionY == GameState[a].PositionY)
                             {
-                                if(GameState[i].PositionX == GameState[a].PositionX && GameState[i].PositionY == GameState[a].PositionY)
+                                if(GameState[i].Colour != GameState[a].Colour)
                                 {
-                                    if(GameState[i].Colour != GameState[a].Colour)
+                                    if(GameState[i].Colour == 'B')
                                     {
-                                        if(GameState[i].Colour == 'B')
+                                        if(!playerTurn)
                                         {
-                                            if(!WhiteCanMove)
-                                            {
-                                                GameState.erase(GameState.begin()+a);
-                                            } else {
-                                                GameState.erase(GameState.begin()+i);
-                                            }
+                                            GameState.erase(GameState.begin()+a);
                                         } else {
-                                            if(WhiteCanMove)
-                                            {
-                                                GameState.erase(GameState.begin()+a);
-                                            } else {
-                                                GameState.erase(GameState.begin()+i);
-                                            }
+                                            GameState.erase(GameState.begin()+i);
                                         }
                                     } else {
-                                        if(Castle)
+                                        if(playerTurn)
                                         {
-                                            if(playerTurn)
-                                            {
-                                                playerTurn = false;
-                                            } else {
-                                                playerTurn = true;
-                                            }
-                                            GameState[castleRook].PositionX = castleRX;
-                                            GameState[pieceSelected].PositionX = castleKX;
+                                            GameState.erase(GameState.begin()+a);
+                                        } else {
+                                            GameState.erase(GameState.begin()+i);
                                         }
+                                    }
+                                } else {
+                                    if(Castle)
+                                    {
+                                        if(playerTurn)
+                                        {
+                                            playerTurn = false;
+                                        } else {
+                                            playerTurn = true;
+                                        }
+                                        GameState[castleRook].PositionX = castleRX;
+                                        GameState[pieceSelected].PositionX = castleKX;
                                     }
                                 }
                             }
                         }
                     }
-                    playerTurn = !playerTurn;
-                } else {
-                    GameState[pieceSelected].Pressed = false;
-                    selected = false;
                 }
-                DEBUG("Finished Gameloop");
-            }
-            int kingPos;
-            for(int i = 0; i < GameState.size();i++)
+
+            if(!pawnToChange)
             {
-                if(playerTurn)
+                for(int i = 0; i < GameState.size(); i++)
                 {
-                    if(GameState[i].Piece == 'K' && GameState[i].Colour == 'W')
-                        kingPos = i;
-                } else {
-                    if(GameState[i].Piece == 'K' && GameState[i].Colour == 'B')
-                        kingPos = i;
+                    if(GameState[i].Colour == (playerTurn ? 'W' : 'B') && GameState[i].Piece == 'P' && GameState[i].PositionY == abs(playerTurn - 1) * 7)
+                        pawnToChange = true;
                 }
+                if(!pawnToChange)
+                    playerTurn = !playerTurn;
             }
-            bool Garbage = false;
-            bool isNotChecked = true;
-            if(!chessC.CheckCheck(GameState, BlackCanMove, GameState[kingPos].PositionX, GameState[kingPos].PositionY, Castle, castleRook))
+            } else {
+                GameState[pieceSelected].Pressed = false;
+                selected = false;
+            }
+
+        for(int i = 0; i < GameState.size();i++)
+        {
+            if(GameState[i].Piece == 'K' && GameState[i].Colour == playerTurn ? 'W' : 'B')
+            {
+                kingPos = i;
+                break;
+            }
+        }
+
+            if(!ChessC.CheckCheck(GameState, !playerTurn, GameState[kingPos].PositionX, GameState[kingPos].PositionY, Castle, castleRook))
                 isNotChecked = false;
-            DEBUG("Before end game check\n");
 
             for(int i = 0; i < GameState.size(); i++)
             {
@@ -416,113 +385,12 @@ public:
                     for(int b = 0;b < 8; b++)
                     {
                         if(mX != 2000)
-                            if(chessC.moveSim(GameState, playerTurn, a, b, i, true, Garbage, castleRook))
+                            if(ChessC.moveSim(GameState, playerTurn, a, b, i, true, Castle, castleRook))
                                 isDraw = false;
                     }
                 }
             }
-            DEBUG("After moveSim");
-
-            // ______OPTIONAL CODE... not working, no idea why.
-            // for(int i = 0;i < GameState.size(); i++)
-            // {
-            //     if((GameState[i].Colour == 'W' && WhiteCanMove) || (GameState[i].Colour == 'B' && !WhiteCanMove))
-            //     {
-            //         printf("\nall good");
-            //         if(GameState[i].Piece == 'P')
-            //         {
-            //             printf("\na pawn");
-            //                 chessC.moveSim(GameState, playerTurn, player1, player2, mX,                     mY,                                                    pieceSelected, true, Castle, castleRook);
-            //             if(!chessC.moveSim(GameState, playerTurn, player1, player2, GameState[i].PositionX, GameState[i].PositionY - ((WhiteCanMove + 1) * 2 - 3), i, true, Garbage, castleRook))
-            //                 isDraw = false;
-            //             if(!chessC.moveSim(GameState, playerTurn, player1, player2, GameState[i].PositionX, GameState[i].PositionY - (((WhiteCanMove + 1) * 2 - 3) * 2), i, true, Garbage, castleRook))
-            //                 isDraw = false;
-            //             if(!chessC.moveSim(GameState, playerTurn, player1, player2, GameState[i].PositionX + 1, GameState[i].PositionY - ((WhiteCanMove + 1) * 2 - 3), i, true, Garbage, castleRook))
-            //                 isDraw = false;
-            //             if(!chessC.moveSim(GameState, playerTurn, player1, player2, GameState[i].PositionX - 1, GameState[i].PositionY - ((WhiteCanMove + 1) * 2 - 3), i, true, Garbage, castleRook))
-            //                 isDraw = false;
-            //         }
-            //         if(GameState[i].Piece == 'R')
-            //         {
-            //             for(int a = 0; a < 8; a++)
-            //             {
-            //             printf("\nrook loop");
-            //             if(!chessC.moveSim(GameState, playerTurn, player1, player2, GameState[i].PositionX, a, i, true, Garbage, castleRook))
-            //                 isDraw = false;
-            //             if(!chessC.moveSim(GameState, playerTurn, player1, player2, a, GameState[i].PositionY, i, true, Garbage, castleRook))
-            //                 isDraw = false;
-            //             }
-            //         }
-            //         if(GameState[i].Piece == 'C')
-            //         {
-            //             if(!chessC.moveSim(GameState, playerTurn, player1, player2, GameState[i].PositionX - 1, GameState[i].PositionY + 2, i, true, Garbage, castleRook))
-            //                 isDraw = false;
-            //             if(!chessC.moveSim(GameState, playerTurn, player1, player2, GameState[i].PositionX + 1, GameState[i].PositionY + 2, i, true, Garbage, castleRook))
-            //                 isDraw = false;
-            //             if(!chessC.moveSim(GameState, playerTurn, player1, player2, GameState[i].PositionX - 1, GameState[i].PositionY - 2, i, true, Garbage, castleRook))
-            //                 isDraw = false;
-            //             if(!chessC.moveSim(GameState, playerTurn, player1, player2, GameState[i].PositionX + 1, GameState[i].PositionY - 2, i, true, Garbage, castleRook))
-            //                 isDraw = false;
-            //             if(!chessC.moveSim(GameState, playerTurn, player1, player2, GameState[i].PositionX - 2, GameState[i].PositionY - 1, i, true, Garbage, castleRook))
-            //                 isDraw = false;
-            //             if(!chessC.moveSim(GameState, playerTurn, player1, player2, GameState[i].PositionX + 2, GameState[i].PositionY - 1, i, true, Garbage, castleRook))
-            //                 isDraw = false;
-            //             if(!chessC.moveSim(GameState, playerTurn, player1, player2, GameState[i].PositionX - 2, GameState[i].PositionY + 1, i, true, Garbage, castleRook))
-            //                 isDraw = false;
-            //             if(!chessC.moveSim(GameState, playerTurn, player1, player2, GameState[i].PositionX + 2, GameState[i].PositionY + 1, i, true, Garbage, castleRook))
-            //                 isDraw = false;
-            //         }
-            //         if(GameState[i].Piece == 'B')
-            //         {
-            //             for(int a = 0; a < 8; a++)
-            //             {
-            //                 if(!chessC.moveSim(GameState, playerTurn, player1, player2, GameState[i].PositionX - a, GameState[i].PositionY - a, i, true, Garbage, castleRook))
-            //                     isDraw = false;
-            //                 if(!chessC.moveSim(GameState, playerTurn, player1, player2, GameState[i].PositionX + a, GameState[i].PositionY - a, i, true, Garbage, castleRook))
-            //                     isDraw = false;
-            //                 if(!chessC.moveSim(GameState, playerTurn, player1, player2, GameState[i].PositionX - a, GameState[i].PositionY + a, i, true, Garbage, castleRook))
-            //                     isDraw = false;
-            //                 if(!chessC.moveSim(GameState, playerTurn, player1, player2, GameState[i].PositionX + a, GameState[i].PositionY + a, i, true, Garbage, castleRook))
-            //                     isDraw = false;
-
-            //             }
-            //         }
-            //         if(GameState[i].Piece == 'Q')
-            //         {
-            //             for(int a = 0; a < 8; a++)
-            //             {
-            //                 for(int b = 0; b < 8; b++)
-            //                 {
-            //                     if(!chessC.moveSim(GameState, playerTurn, player1, player2, a, b, i, true, Garbage, castleRook))
-            //                         isDraw = false;
-            //                 }
-            //             }
-            //         }
-            //         if(GameState[i].Piece == 'K')
-            //         {
-            //             if(!chessC.moveSim(GameState, playerTurn, player1, player2, GameState[i].PositionX - 1, GameState[i].PositionY - 1, i, true, Garbage, castleRook))
-            //                 isDraw = false;
-            //             if(!chessC.moveSim(GameState, playerTurn, player1, player2, GameState[i].PositionX - 1, GameState[i].PositionY, i, true, Garbage, castleRook))
-            //                 isDraw = false;
-            //             if(!chessC.moveSim(GameState, playerTurn, player1, player2, GameState[i].PositionX - 1, GameState[i].PositionY + 1, i, true, Garbage, castleRook))
-            //                 isDraw = false;
-            //             if(!chessC.moveSim(GameState, playerTurn, player1, player2, GameState[i].PositionX , GameState[i].PositionY - 1, i, true, Garbage, castleRook))
-            //                 isDraw = false;
-            //             if(!chessC.moveSim(GameState, playerTurn, player1, player2, GameState[i].PositionX, GameState[i].PositionY + 1, i, true, Garbage, castleRook))
-            //                 isDraw = false;
-            //             if(!chessC.moveSim(GameState, playerTurn, player1, player2, GameState[i].PositionX + 1, GameState[i].PositionY - 1, i, true, Garbage, castleRook))
-            //                 isDraw = false;
-            //             if(!chessC.moveSim(GameState, playerTurn, player1, player2, GameState[i].PositionX + 1, GameState[i].PositionY, i, true, Garbage, castleRook))
-            //                 isDraw = false;
-            //             if(!chessC.moveSim(GameState, playerTurn, player1, player2, GameState[i].PositionX + 1, GameState[i].PositionY + 1, i, true, Garbage, castleRook))
-            //                 isDraw = false;
-            //         }
-            //         Garbage = false;
-            //     }
-            //     printf("isDraw: %d",isDraw);
-            // }
-            DEBUG("After end game check\n");
-            if (!isDraw) {
+            if(!isDraw) {
                 gameEnding = 0;
             }else if(isDraw && isNotChecked)
             {
@@ -530,18 +398,19 @@ public:
             } else if(isDraw && !isNotChecked) {
                 gameEnding = 2;
             }
-            DEBUG("After end game check\n");
-            itIsTimeToMoveForWhite = WhiteCanMove;
         }
+        if(selectedAPiece)
+            selected = true;
     }
-void pawnSwapper(std::vector<ChessPiece> &GameState, int pieceSelected, int mX)
+
+void pawnSwapper(std::vector<ChessPiece> &GameState, int pieceSelected, int mX, bool virtualPress)
 {
     DrawDecal({48,80},decPS, {0.625f, 0.375f});
     DrawDecal({64,112},decR,{(mX == 2) ? 5.0f : 4.0f,(mX == 2) ? 5.0f : 4.0f}, olc::BLACK);
     DrawDecal({96,112},decC,{(mX == 3) ? 5.0f : 4.0f,(mX == 3) ? 5.0f : 4.0f}, olc::BLACK);
     DrawDecal({128,112},decB,{(mX == 4) ? 5.0f : 4.0f,(mX == 4) ? 5.0f : 4.0f}, olc::BLACK);
     DrawDecal({160,112},decQ,{(mX == 5) ? 5.0f : 4.0f,(mX == 5) ? 5.0f : 4.0f}, olc::BLACK);
-    if(GetMouse(0).bPressed)
+    if(GetMouse(0).bPressed || virtualPress)
     {
         if(mX == 2)
             GameState[pieceSelected].Piece = 'R';
@@ -551,17 +420,17 @@ void pawnSwapper(std::vector<ChessPiece> &GameState, int pieceSelected, int mX)
             GameState[pieceSelected].Piece = 'B';
         if(mX == 5)
             GameState[pieceSelected].Piece = 'Q';
-    chessInitiaing.reloadPiece(GameState[pieceSelected], piecesMode);
+    chessInitiating.reloadPiece(GameState[pieceSelected], piecesMode);
     }
 }
 
-bool buttonDrawer(olc::vf2d mouse, std::string name, olc::vf2d position)
+bool buttonDrawer(olc::vf2d mouse, std::string name, olc::vi2d position, bool backgroundColourBool)
  {
     bool PressedStart = false;
     if(mouse.x > position.x && mouse.x < position.x + 32 && mouse.y > position.y && mouse.y < position.y + 16)
         PressedStart = true;
     DrawDecal(position,decButton, {0.125f, 0.125f}, {255,floor(1 /(PressedStart + 1)) * 255,floor(1 /(PressedStart + 1)) * 255});
-    DrawString({position.x + 40,position.y},name,backgroundColourBool ? olc::BLACK : olc::WHITE);
+    DrawString({position.x+ 40,position.y},name,backgroundColourBool ? olc::BLACK : olc::WHITE);
 
     if(PressedStart && GetMouse(0).bPressed)
         return true;

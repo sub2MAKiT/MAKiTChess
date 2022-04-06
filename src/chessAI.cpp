@@ -3,7 +3,7 @@
 AIMove chessAI::AIMOVE(Turn player, std::vector<ChessPiece> GameState)
 {
     AIMove FinalMove;
-    ChessCheck Check;
+    chessCheck Check;
     std::vector<ChessBoardsForAI> ALLMOVES;
     ALLMOVES.push_back({GameState,0,0,0,0});
 
@@ -79,7 +79,7 @@ std::vector<ChessBoardsForAI> chessAI::moveAI(std::vector<ChessPiece> GameStateO
 {
     std::vector<ChessPiece> GameStateFirst = GameStateOG;
     std::vector<ChessBoardsForAI> Chess4d = {};
-    ChessCheck ChessC;
+    chessCheck ChessC;
     bool Castle;
     int CastleInt;
     int castleRX;

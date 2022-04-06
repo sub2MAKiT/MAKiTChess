@@ -1,6 +1,6 @@
 #include "chessCheck.h"
 
-bool ChessCheck::moveSim(std::vector<ChessPiece> GameState, bool playerTurn, int mX, int mY, int pieceSelected, bool saverFromLoop, bool &Castle, int &castleRook)
+bool chessCheck::moveSim(std::vector<ChessPiece> GameState, bool playerTurn, int mX, int mY, int pieceSelected, bool saverFromLoop, bool &Castle, int &castleRook)
 {
     std::vector<ChessPiece> GameStateCopy = GameState;
     bool moveCorrect = false;
@@ -352,7 +352,7 @@ bool ChessCheck::moveSim(std::vector<ChessPiece> GameState, bool playerTurn, int
     DEBUG("Returned the move");
     return moveCorrect;
 }
-bool ChessCheck::CheckCheck(std::vector<ChessPiece> GameState, bool playerTurn, int kPX, int kPY, bool Castle, int castleRook)
+bool chessCheck::CheckCheck(std::vector<ChessPiece> GameState, bool playerTurn, int kPX, int kPY, bool Castle, int castleRook)
     {
         // true means no check
         bool PlayerTurn = !playerTurn;
