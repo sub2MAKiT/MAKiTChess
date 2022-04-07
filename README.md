@@ -1,4 +1,4 @@
-# MAKiTChess 0.9.2
+# MAKiTChess 0.9.3
 ---
 This script is still WiP, the documentation will be available soon.
 
@@ -6,6 +6,15 @@ This script is still WiP, the documentation will be available soon.
 For now, in order to compile the code. You can use the ```build.ps1```, I would personally recommend using the ```-fast```, because it shouldn't be causing any bugs and it is making it significantly better for the AI.
 
 >In order to compile enter the folder ***MAKITCHESS*** *(the file that everything is in)* and only then execute the build.ps1, otherwise the textures won't load.
+
+# AI
+
+1. Basic:
+   - Bruteforcing its way to victory, and not achieving it.
+   - Hopes that its opponent will always choose the worst case scenario.
+2. Default:
+   - Bruteforcing its way to victory.
+   - Calculating the realistic game.
 
 # ChangeLog:
 ### 0.1.0
@@ -32,3 +41,5 @@ For now, in order to compile the code. You can use the ```build.ps1```, I would 
    - Added a GUI for the AI, and added the *Basic AI*.
 ### 0.9.2
    - Changed the **gameLoop**, so it is no longer dependent on the user input, AI is playing with the same rules
+### 0.9.3
+   - Added the *Smart AI* option.

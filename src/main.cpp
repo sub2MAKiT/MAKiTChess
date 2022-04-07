@@ -258,7 +258,8 @@ public:
             if(GameState[i].Colour == (playerTurn ? 'W' : 'B') && GameState[i].Piece == 'P' && GameState[i].PositionY == abs(playerTurn - 1) * 7)
             {
                 pawnToChange = true;
-                pawnSwapper(GameState,i, (virtualPress ? 5 : int(floor(GetMouseX()/32))),virtualPress);
+                if(pawnSwapper(GameState,i, (virtualPress ? 5 : int(floor(GetMouseX()/32))),virtualPress))
+                    playerTurn = !playerTurn;
             }
         }
 
@@ -272,8 +273,6 @@ public:
                 {
                     if((mX == GameState[i].PositionX && mY == GameState[i].PositionY) && GameState[i].Colour == (playerTurn ? 'W' : 'B'))// 87 vs 66
                     {
-                        printf("X: %d, Y: %d\n", mX,mY);
-                        printf("PX: %d, PY: %d\n", GameState[i].PositionX,GameState[i].PositionY);
                         GameState[i].Pressed = true;
                         selectedAPiece = true;
                         pieceSelected = i;
@@ -403,7 +402,7 @@ public:
             selected = true;
     }
 
-void pawnSwapper(std::vector<ChessPiece> &GameState, int pieceSelected, int mX, bool virtualPress)
+bool pawnSwapper(std::vector<ChessPiece> &GameState, int pieceSelected, int mX, bool virtualPress)
 {
     DrawDecal({48,80},decPS, {0.625f, 0.375f});
     DrawDecal({64,112},decR,{(mX == 2) ? 5.0f : 4.0f,(mX == 2) ? 5.0f : 4.0f}, olc::BLACK);
@@ -420,8 +419,11 @@ void pawnSwapper(std::vector<ChessPiece> &GameState, int pieceSelected, int mX, 
             GameState[pieceSelected].Piece = 'B';
         if(mX == 5)
             GameState[pieceSelected].Piece = 'Q';
-    chessInitiating.reloadPiece(GameState[pieceSelected], piecesMode);
+        chessInitiating.reloadPiece(GameState[pieceSelected], piecesMode);
+        if(mX < 6 && mX > 1)
+            return true;
     }
+    return false;
 }
 
 bool buttonDrawer(olc::vf2d mouse, std::string name, olc::vi2d position, bool backgroundColourBool)

@@ -11,6 +11,12 @@ struct ChessBoardsForAI
     int pieceSelected;
 };
 
+struct SmartChessBoardsForAI
+{
+    ChessBoardsForAI CBFAI;
+    int points;
+};
+
 struct AIMove {
     int mX;
     int mY;
@@ -23,4 +29,6 @@ public:
     std::vector<ChessBoardsForAI> moveAI(std::vector<ChessPiece> GameState, bool isWhite, int cDepth, int firstID);
     int pointCalculator(std::vector<ChessPiece> GameState, Turn player);
     AIMove movePicker(std::vector<ChessBoardsForAI> ALLMOVES, int Depth, Turn player);
+    int smartPointCalculator(std::vector<ChessPiece> GameState, bool player);
+    int reallySmartExclamationPoint(int value);
 };
