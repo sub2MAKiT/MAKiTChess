@@ -1,4 +1,4 @@
-# MAKiTChess 0.9.3
+# MAKiTChess 0.9.4
 ---
 This script is still WiP, the documentation will be available soon.
 
@@ -43,3 +43,5 @@ For now, in order to compile the code. You can use the ```build.ps1```, I would 
    - Changed the **gameLoop**, so it is no longer dependent on the user input, AI is playing with the same rules
 ### 0.9.3
    - Added the *Smart AI* option.
+### 0.9.4
+   - Improved the *Smart AI*, but only on depth 1.

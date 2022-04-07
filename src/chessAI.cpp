@@ -1,6 +1,6 @@
 #include "chessAI.h"
 
-AIMove chessAI::AIMOVE(Turn player, std::vector<ChessPiece> GameState)
+AIMove chessAI::AIMOVE(Turn player, std::vector<ChessPiece> GameState,std::vector<int> mXQueue,std::vector<int> mYQueue,std::vector<int> PSQueue)
 {
 
     AIMove FinalMove;
@@ -25,7 +25,7 @@ AIMove chessAI::AIMOVE(Turn player, std::vector<ChessPiece> GameState)
                 }
             }
         }
-        FinalMove = movePicker(ALLMOVES,player.AI.depth,player);
+        FinalMove = movePicker(ALLMOVES,player.AI.depth,player,mXQueue,mYQueue,PSQueue);
     }
 
 
@@ -35,24 +35,29 @@ AIMove chessAI::AIMOVE(Turn player, std::vector<ChessPiece> GameState)
         for(int i = 1; i <= player.AI.depth; i++)
         {
             std::vector<ChessBoardsForAI> Temp = {};
+            std::vector<std::vector<ChessBoardsForAI>> TempChessBoardsForAI = {};
             for(int a = 0; a < ALLMOVES.size(); a++)
             {
-                if(i % 2 != 0)
-                    Temp = moveAI(ALLMOVES[a].Board,player.Player,i, ALLMOVES[a].firstId);
-                else
-                    Temp = moveAI(ALLMOVES[a].Board,!player.Player,i, ALLMOVES[a].firstId);
+                    if(i % 2 != 0)
+                        Temp = moveAI(ALLMOVES[a].Board,player.Player,i, ALLMOVES[a].firstId);
+                    else
+                        Temp = moveAI(ALLMOVES[a].Board,!player.Player,i, ALLMOVES[a].firstId);
+                    TempChessBoardsForAI.push_back(Temp);
             }
-            for(int a = 0; a < Temp.size();a++)
+                printf("%d\n",i);
+            for(int b = 0; b < TempChessBoardsForAI.size();b++)
             {
-                topDepth.push_back({Temp[a],smartPointCalculator(Temp[a].Board,player.Player)});
+                for(int a = 0; a < TempChessBoardsForAI[b].size();a++)
+                {
+                    topDepth.push_back({TempChessBoardsForAI[b][a],smartPointCalculator(TempChessBoardsForAI[b][a].Board,player.Player,mXQueue,mYQueue,PSQueue,TempChessBoardsForAI[b][a].mX,TempChessBoardsForAI[b][a].mY,TempChessBoardsForAI[b][a].pieceSelected)});
+                }
             }
-            float transformationConstant = (100 + (topDepth.size() - 40)) / 100;
-            while(floor(topDepth.size() * transformationConstant) > reallySmartExclamationPoint(i) * player.AI.depth)
+            while(topDepth.size() > reallySmartExclamationPoint(i) * player.AI.depth)
             {
-                int worst = topDepth[0].points;
+                int worst = 0;
                 for(int a = 0; a < topDepth.size(); a++)
                 {
-                    if(topDepth[a].points < worst && topDepth[a].CBFAI.cDepth == i)
+                    if(topDepth[a].points < topDepth[worst].points && topDepth[a].CBFAI.cDepth == i)
                         worst = a;
 
                 }
@@ -63,14 +68,32 @@ AIMove chessAI::AIMOVE(Turn player, std::vector<ChessPiece> GameState)
                 ALLMOVES.push_back(topDepth[a].CBFAI);
             }
         }
-        FinalMove = movePicker(ALLMOVES,player.AI.depth,player);
+        FinalMove = movePicker(ALLMOVES,player.AI.depth,player,mXQueue,mYQueue,PSQueue);
     }
 
+    printf("\n\n\n\nENDED");
+    printf("\nX: %d Y: %d PS: %d",FinalMove.mX, FinalMove.mY, FinalMove.pieceSelected);
+
+    if(player.AI.option == 'A')
+    {
+        for(int i = 0; i <= player.AI.depth; i++)
+        {
+            std::vector<std::vector<ChessBoardsForAI>> TempChessBoardsForAI = {};
+            std::vector<ChessBoardsForAI> Temp = {};
+            for(int a = 0; a < ALLMOVES.size(); a++)
+            {
+                if(i % 2 != 0)
+                    Temp = moveAI(ALLMOVES[a].Board,player.Player,i, ALLMOVES[a].firstId);
+                else
+                    Temp = moveAI(ALLMOVES[a].Board,!player.Player,i, ALLMOVES[a].firstId);
+            }
+        }
+    }
 
     return FinalMove;
 }
 
-AIMove chessAI::movePicker(std::vector<ChessBoardsForAI> ALLMOVES,int Depth, Turn player)
+AIMove chessAI::movePicker(std::vector<ChessBoardsForAI> ALLMOVES,int Depth, Turn player, std::vector<int> mXQueue,std::vector<int> mYQueue,std::vector<int> PSQueue)
 {
     AIMove move;
     std::vector<ChessBoardsForAI> lowestMoves = {};
@@ -166,7 +189,7 @@ AIMove chessAI::movePicker(std::vector<ChessBoardsForAI> ALLMOVES,int Depth, Tur
     if(player.AI.option == 'S')
     {
         std::vector<int> tempFirstID = {};
-        std::vector<ChessBoardsForAI> tempBoard = {};
+
         std::vector<SmartChessBoardsForAI> tempTempBoard = {};
         bool isIDTaken = false;
         for(int a = 0; a < lowestMoves.size();a++)
@@ -182,16 +205,17 @@ AIMove chessAI::movePicker(std::vector<ChessBoardsForAI> ALLMOVES,int Depth, Tur
         }
         for(int i = 0; i < tempFirstID.size();i++)
         {
+            std::vector<ChessBoardsForAI> tempBoard = {};
             for(int a = 0; a < lowestMoves.size();a++)
             {
                 if(tempFirstID[i] == lowestMoves[a].firstId)
                     tempBoard.push_back(lowestMoves[a]);
             }
             int worstA = 0;
-            int worst = smartPointCalculator(tempBoard[0].Board,(Depth % 2 == 0) ? !player.Player : player.Player);
+            int worst = smartPointCalculator(tempBoard[0].Board,player.Player,mXQueue,mYQueue,PSQueue, tempBoard[0].mX,tempBoard[0].mY,tempBoard[0].pieceSelected);
             for(int a = 0; a < tempBoard.size(); a++)
             {
-                int sPC = smartPointCalculator(tempBoard[a].Board,(Depth % 2 == 0) ? !player.Player : player.Player);
+                int sPC = smartPointCalculator(tempBoard[a].Board,player.Player,mXQueue,mYQueue,PSQueue,tempBoard[a].mX,tempBoard[a].mY,tempBoard[a].pieceSelected);
                 if(sPC < worst)
                 {
                     worstA = a;
@@ -326,45 +350,70 @@ int chessAI::pointCalculator(std::vector<ChessPiece> GameState, Turn player)
     return points;
 }
 
-int chessAI::smartPointCalculator(std::vector<ChessPiece> GameState, bool player)
+int chessAI::smartPointCalculator(std::vector<ChessPiece> GameState, bool player,std::vector<int> mXQueue,std::vector<int> mYQueue,std::vector<int> PSQueue, int mX, int mY, int pieceSelected)
 {
     chessCheck chessC;
-    int points = 100;
+    int points = 1000;
     for(int i = 0; i < GameState.size(); i++)
     {
         if(GameState[i].Colour == player ? 'W' : 'B')
         {
             if(GameState[i].Piece == 'P')
             {
-                points++;
+                points += 10;
                 points += floor(abs(abs(player - 1) * 7 - GameState[i].PositionY) / 3);
                 if(GameState[i].PositionY == player ? 0 : 7)
-                    points += 4;
+                    points += 40;
             }
             else if(GameState[i].Piece == 'R')
-                points += 5;
+            {
+                points += 50;
+                points += abs(GameState[i].PositionX - player?4:3) + abs(GameState[i].PositionY - 3);
+            }
             else if(GameState[i].Piece == 'B' || GameState[i].Piece == 'C')
-                points += 3;
+            {
+                points += 30;
+                points += abs(GameState[i].PositionX - player?4:3) + abs(GameState[i].PositionY - 3);
+            }
             else if(GameState[i].Piece == 'Q')
-                points += 8;
+                points += 80;
         }
         if(GameState[i].Colour != player ? 'W' : 'B')
         {
             if(GameState[i].Piece == 'P')
-                points--;
+                points -= 10;
             else if(GameState[i].Piece == 'R')
-                points -= 5;
+                points -= 50;
             else if(GameState[i].Piece == 'B' || GameState[i].Piece == 'C')
-                points -= 3;
+                points -= 30;
             else if(GameState[i].Piece == 'Q')
-                points -= 8;
+                points -= 80;
             else
             {
                 if(!chessC.CheckCheck(GameState, !player, GameState[i].PositionX, GameState[i].PositionY, false, 0))
-                    points += 4;
+                    points += 400;
             }
+
+            if(mXQueue[mXQueue.size()-4]==mXQueue[mXQueue.size()-8]&&mXQueue[mXQueue.size()-4]==mX&&PSQueue[PSQueue.size()-4]==PSQueue[PSQueue.size()-8]&&PSQueue[PSQueue.size()-4]==pieceSelected&&mYQueue[mYQueue.size()-8]==mYQueue[mYQueue.size()-8]&&mYQueue[mYQueue.size()-4]==mY)
+                points -= 300;
         }
     }
+
+    // i saved you from this btw
+
+    // if(!pawnToChange)
+    // playerTurn = !playerTurn;
+    // if(moveQueue.size() != 0)
+    // if(moveQueue[(moveQueue.size() > 5)?moveQueue.size()-5:0].size() == GameState.size())
+    // for(int a = 0; a < moveQueue[(moveQueue.size() > 5)?moveQueue.size()-5:0].size();a++)
+    // {
+    // if(moveQueue[(moveQueue.size() > 5)?(moveQueue.size()-5):0][a].PositionX != GameState[a].PositionX)
+    // break;
+    // if(a == GameState.size() - 1)
+    // isDraw = true;
+    // }
+    // moveQueue.push_back(GameState);
+
     return points;
 }
 

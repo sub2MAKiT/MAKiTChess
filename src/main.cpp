@@ -25,6 +25,9 @@ public:
     olc::Decal* decButton = nullptr;
 
     std::vector<ChessPiece> Pieces = {};
+    std::vector<int> mXQueue = {2000,2000};
+    std::vector<int> mYQueue = {2000,2000};
+    std::vector<int> PSQueue = {2000,2000};
     Turn Player1 = {};
     Turn Player2 = {};
     bool playerTurn = true;
@@ -242,7 +245,7 @@ public:
             mX = mmX;
             mY = mmY;
         } else {
-            AIMove = ChessAI.AIMOVE(ChosenPlayer,GameState);
+            AIMove = ChessAI.AIMOVE(ChosenPlayer,GameState,mXQueue,mYQueue,PSQueue);
             selected = true;
             pieceSelected = AIMove.pieceSelected;
             mX = AIMove.mX;
@@ -259,7 +262,11 @@ public:
             {
                 pawnToChange = true;
                 if(pawnSwapper(GameState,i, (virtualPress ? 5 : int(floor(GetMouseX()/32))),virtualPress))
+                {
                     playerTurn = !playerTurn;
+ 
+                }
+                
             }
         }
 
@@ -358,7 +365,12 @@ public:
                         pawnToChange = true;
                 }
                 if(!pawnToChange)
+                {
                     playerTurn = !playerTurn;
+                    mXQueue.push_back(mX);
+                    mYQueue.push_back(mY);
+                    PSQueue.push_back(pieceSelected);
+                }
             }
             } else {
                 GameState[pieceSelected].Pressed = false;
@@ -389,6 +401,10 @@ public:
                     }
                 }
             }
+            if(mXQueue.size()>3)
+            if(mXQueue[mXQueue.size()-4]==mXQueue[mXQueue.size()-8]&&mXQueue[mXQueue.size()-4]==mX&&PSQueue[PSQueue.size()-4]==PSQueue[PSQueue.size()-8]&&PSQueue[PSQueue.size()-4]==pieceSelected&&mYQueue[mYQueue.size()-8]==mYQueue[mYQueue.size()-8]&&mYQueue[mYQueue.size()-4]==mY)
+                isDraw = true;
+
             if(!isDraw) {
                 gameEnding = 0;
             }else if(isDraw && isNotChecked)
