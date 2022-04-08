@@ -7,23 +7,12 @@ bool chessCheck::moveSim(std::vector<ChessPiece> GameState, bool playerTurn, int
     bool move1 = false;
     bool move2 = false;
     bool moveDone = false;
-    char correctColour;
-    bool correctTurn;
     int pSPX = GameState[pieceSelected].PositionX;
     int pSPY = GameState[pieceSelected].PositionY;
     Castle = false;
-    if(playerTurn)
+            printf("\nDEBUG 1");
+    if(GameState[pieceSelected].Colour == playerTurn?'W':'B')
     {
-        correctTurn = true;
-        correctColour = 'W';
-    } else {
-        correctTurn = false;
-        correctColour = 'B';
-    }
-    if(GameState[pieceSelected].Colour == correctColour)
-    {
-        if(!saverFromLoop)
-            DEBUGVALUE("\ncheckCheck1 %d %d",mX, mY);
         if(GameState[pieceSelected].Piece == 'P')
         {
             for(int i = 0; i < GameState.size(); i++)
@@ -36,12 +25,9 @@ bool chessCheck::moveSim(std::vector<ChessPiece> GameState, bool playerTurn, int
             //                               
             if(move2 || ((mX == GameState[pieceSelected].PositionX && (!move1 && (mY == GameState[pieceSelected].PositionY - ((playerTurn + 1) * 2 - 3) || ( GameState[pieceSelected].PositionY == abs(((playerTurn + 1) * (playerTurn + 1) * (playerTurn + 1)) - 2) && mY == GameState[pieceSelected].PositionY - (((playerTurn + 1) * 2 - 3) * 2)))))))
             {
-                if(!saverFromLoop)
-                    DEBUG("\ncheckCheck2");
                 moveDone = true;
             } else {
                 GameState[pieceSelected].Pressed = false;
-                DEBUG("182\n");
 
             }
             
@@ -96,8 +82,6 @@ bool chessCheck::moveSim(std::vector<ChessPiece> GameState, bool playerTurn, int
                 moveDone = true;
             } else {
                 GameState[pieceSelected].Pressed = false;
-                DEBUG("237\n");
-
             }
             
         }
@@ -128,7 +112,6 @@ bool chessCheck::moveSim(std::vector<ChessPiece> GameState, bool playerTurn, int
                 moveDone = true;
             } else {
                 GameState[pieceSelected].Pressed = false;
-                DEBUG("269\n");
 
             }
         }
@@ -147,7 +130,6 @@ bool chessCheck::moveSim(std::vector<ChessPiece> GameState, bool playerTurn, int
                 moveDone = true;
             } else {
                 GameState[pieceSelected].Pressed = false;
-                DEBUG("288\n");
 
             }
         }
@@ -222,7 +204,6 @@ bool chessCheck::moveSim(std::vector<ChessPiece> GameState, bool playerTurn, int
                 moveDone = true;
             } else {
                 GameState[pieceSelected].Pressed = false;
-                DEBUG("363\n");
 
             }
         }
@@ -232,7 +213,7 @@ bool chessCheck::moveSim(std::vector<ChessPiece> GameState, bool playerTurn, int
                 move1 = true;
             for(int m = 0; m < GameState.size();m++)
             {
-                if(((GameState[m].Piece == 'R' && GameState[m].Colour == correctColour) && (GameState[m].PositionX == mX && GameState[m].PositionY == mY))&& (GameState[m].Moved == false && GameState[pieceSelected].Moved == false))
+                if(((GameState[m].Piece == 'R' && GameState[m].Colour == playerTurn?'W':'B') && (GameState[m].PositionX == mX && GameState[m].PositionY == mY))&& (GameState[m].Moved == false && GameState[pieceSelected].Moved == false))
                 {
                     castleRook = m;
                     Castle = true;
@@ -244,19 +225,16 @@ bool chessCheck::moveSim(std::vector<ChessPiece> GameState, bool playerTurn, int
             } else if(Castle) {
             } else {
                 GameState[pieceSelected].Pressed = false;
-                DEBUG("376\n");
 
             }
         }
     }
+            printf("\nDEBUG 2");
     if(moveDone)
     {
         moveCorrect = true;
-        DEBUGVALUE("\nmove done, %d\n",moveCorrect);
         GameStateCopy[pieceSelected].PositionX = mX;
-                DEBUGVALUE("\nmove done1, %d\n",moveCorrect);
         GameStateCopy[pieceSelected].PositionY = mY;
-                DEBUGVALUE("\nmove done2, %d\n",moveCorrect);
         for(int i = 0; i < GameStateCopy.size(); i++)
         {
             for(int a = 0; a < GameStateCopy.size(); a++)
@@ -273,11 +251,10 @@ bool chessCheck::moveSim(std::vector<ChessPiece> GameState, bool playerTurn, int
                 }
             }
         }
-                DEBUGVALUE("\nmove done3, %d\n",moveCorrect);
     }
+            printf("\nDEBUG 3");
     if(Castle)
     {
-        DEBUG("\nCastle\n");
         moveCorrect = true;
         bool somethingInTheWayThatIsNotABatmanReference = false;
         if(!GameState[pieceSelected].Moved && !GameState[castleRook].Moved)
@@ -299,9 +276,8 @@ bool chessCheck::moveSim(std::vector<ChessPiece> GameState, bool playerTurn, int
         }
     }
     int kingPos;
-    DEBUGVALUE("\nmove done4, %d\n",moveCorrect);
-    DEBUGVALUE("\nmoved before deletion, %d\n",moveCorrect);
 
+            printf("\nDEBUG 4");
     for(int i = 0; i < GameStateCopy.size(); i++)
         {
             for(int a = 0; a < GameStateCopy.size(); a++)
@@ -314,14 +290,14 @@ bool chessCheck::moveSim(std::vector<ChessPiece> GameState, bool playerTurn, int
                         {
                             if(GameStateCopy[i].Colour == 'B')
                             {
-                                if(!correctTurn)
+                                if(!playerTurn)
                                 {
                                     GameStateCopy.erase(GameStateCopy.begin()+a);
                                 } else {
                                     GameStateCopy.erase(GameStateCopy.begin()+i);
                                 }
                             } else {
-                                if(correctTurn)
+                                if(playerTurn)
                                 {
                                     GameStateCopy.erase(GameStateCopy.begin()+a);
                                 } else {
@@ -333,51 +309,36 @@ bool chessCheck::moveSim(std::vector<ChessPiece> GameState, bool playerTurn, int
                 }
             }
         }
-    DEBUGVALUE("\nmoved after deletion, %d\n",moveCorrect);
+            printf("\nDEBUG 5");
     for(int i = 0; i < GameStateCopy.size(); i++)
     {
         if(GameStateCopy[i].Piece == 'K')
-        if(GameStateCopy[i].Colour == correctColour)
+        if(GameStateCopy[i].Colour == playerTurn?'W':'B')
         kingPos = i;
     }
-    DEBUGVALUE("\nmoved before cc, %d\n",moveCorrect);
+            printf("\nDEBUG 6");
     if(moveCorrect)
+    {
         if(saverFromLoop)
         {
             moveCorrect = CheckCheck(GameStateCopy, playerTurn, GameStateCopy[kingPos].PositionX, GameStateCopy[kingPos].PositionY, Castle, castleRook);
-            DEBUG("finished the CheckCheck");
         }
-    if(moveCorrect)
         GameState[pieceSelected].Moved = true;
-    DEBUG("Returned the move");
+    }
+            printf("\nDEBUG 7");
     return moveCorrect;
 }
 bool chessCheck::CheckCheck(std::vector<ChessPiece> GameState, bool playerTurn, int kPX, int kPY, bool Castle, int castleRook)
     {
         // true means no check
-        bool PlayerTurn = !playerTurn;
         bool temp = true;
-        DEBUG("crash Test 1");
         std::vector<ChessPiece> copyPieces = GameState;
-        DEBUG("crash Test 2");
-        char colour;
-        if(playerTurn == true)
-            colour = 'B';
-        else
-            colour = 'W';
-        DEBUG("\nCheckCheck checker");
-        DEBUGVALUE("\nCheckCheck check for checking %d",temp);
         for(int i = 0; i < copyPieces.size(); i++)
         {
-            DEBUGVALUE("%d",kPY);
-            if(moveSim(copyPieces, PlayerTurn, kPX, kPY, i, false, Castle, castleRook))
+            if(moveSim(copyPieces, !playerTurn, kPX, kPY, i, false, Castle, castleRook))
             {
-                DEBUGVALUE("\n%c,%c,%d",copyPieces[i].Colour, copyPieces[i].Piece,i);
-                DEBUG("found it");
                 temp = false;
-                break;
             }
         }
-        DEBUG("checked");
         return temp;
     }

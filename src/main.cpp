@@ -270,7 +270,7 @@ public:
             }
         }
 
-
+        printf("\n\n\n\n\n\n");
         // If the current player is a player (:DDD) then allow them to choose the piece to move
         if(!selected && !pawnToChange)
         {
@@ -290,8 +290,10 @@ public:
 
             
             // Check if the move is correct
+        printf("\nIF TEST 1");
             if(ChessC.moveSim(GameState, playerTurn, mX, mY, pieceSelected, true, Castle, castleRook))
             {
+        printf("\nIF TEST 2");
 
 
                 // Movement handling
@@ -401,7 +403,7 @@ public:
                     }
                 }
             }
-            if(mXQueue.size()>3)
+        if(mXQueue.size() > 8)
             if(mXQueue[mXQueue.size()-4]==mXQueue[mXQueue.size()-8]&&mXQueue[mXQueue.size()-4]==mX&&PSQueue[PSQueue.size()-4]==PSQueue[PSQueue.size()-8]&&PSQueue[PSQueue.size()-4]==pieceSelected&&mYQueue[mYQueue.size()-8]==mYQueue[mYQueue.size()-8]&&mYQueue[mYQueue.size()-4]==mY)
                 isDraw = true;
 
