@@ -268,7 +268,8 @@ bool chessCheck::moveSim(std::vector<ChessPiece> GameState, bool playerTurn, int
         }
         if(!somethingInTheWayThatIsNotABatmanReference)
         {
-            moveCorrect = CheckCheck(GameStateCopy, playerTurn, GameStateCopy[pieceSelected].PositionX, GameStateCopy[pieceSelected].PositionY, Castle, castleRook);
+            if(saverFromLoop)
+                moveCorrect = CheckCheck(GameStateCopy, playerTurn, GameStateCopy[pieceSelected].PositionX, GameStateCopy[pieceSelected].PositionY, Castle, castleRook);
             Castle = true;
             return moveCorrect;
         } else {
