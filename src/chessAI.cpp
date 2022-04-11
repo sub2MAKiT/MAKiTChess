@@ -36,6 +36,7 @@ AIMove chessAI::AIMOVE(Turn player, std::vector<ChessPiece> GameState,std::vecto
         {
             std::vector<ChessBoardsForAI> Temp = {};
             std::vector<std::vector<ChessBoardsForAI>> TempChessBoardsForAI = {};
+        printf("\nA1: %d",i);
             for(int a = 0; a < ALLMOVES.size(); a++)
             {
                     if(i % 2 != 0)
@@ -44,7 +45,7 @@ AIMove chessAI::AIMOVE(Turn player, std::vector<ChessPiece> GameState,std::vecto
                         Temp = moveAI(ALLMOVES[a].Board,!player.Player,i, ALLMOVES[a].firstId);
                     TempChessBoardsForAI.push_back(Temp);
             }
-                printf("%d\n",i);
+        printf("\nA2: %d",i);
             for(int b = 0; b < TempChessBoardsForAI.size();b++)
             {
                 for(int a = 0; a < TempChessBoardsForAI[b].size();a++)
@@ -52,6 +53,7 @@ AIMove chessAI::AIMOVE(Turn player, std::vector<ChessPiece> GameState,std::vecto
                     topDepth.push_back({TempChessBoardsForAI[b][a],smartPointCalculator(TempChessBoardsForAI[b][a].Board,player.Player,mXQueue,mYQueue,PSQueue,TempChessBoardsForAI[b][a].mX,TempChessBoardsForAI[b][a].mY,TempChessBoardsForAI[b][a].pieceSelected)});
                 }
             }
+        printf("\nA");
             while(topDepth.size() > reallySmartExclamationPoint(i) * player.AI.depth)
             {
                 int worst = 0;
@@ -68,11 +70,9 @@ AIMove chessAI::AIMOVE(Turn player, std::vector<ChessPiece> GameState,std::vecto
                 ALLMOVES.push_back(topDepth[a].CBFAI);
             }
         }
-        FinalMove = movePicker(ALLMOVES,player.AI.depth,player,mXQueue,mYQueue,PSQueue);
+        FinalMove = movePicker(ALLMOVES,player.AI.depth,player,mXQueue,mYQueue,PSQueue,GameState);
     }
 
-    printf("\n\n\n\nENDED");
-    printf("\nX: %d Y: %d PS: %d",FinalMove.mX, FinalMove.mY, FinalMove.pieceSelected);
 
     if(player.AI.option == 'A')
     {
@@ -93,9 +93,10 @@ AIMove chessAI::AIMOVE(Turn player, std::vector<ChessPiece> GameState,std::vecto
     return FinalMove;
 }
 
-AIMove chessAI::movePicker(std::vector<ChessBoardsForAI> ALLMOVES,int Depth, Turn player, std::vector<int> mXQueue,std::vector<int> mYQueue,std::vector<int> PSQueue)
+AIMove chessAI::movePicker(std::vector<ChessBoardsForAI> ALLMOVES,int Depth, Turn player, std::vector<int> mXQueue,std::vector<int> mYQueue,std::vector<int> PSQueue,std::vector<ChessPiece> GameStateOptional = {})
 {
     AIMove move;
+    chessCheck ChessC;
     std::vector<ChessBoardsForAI> lowestMoves = {};
     std::vector<int> points = {};
     for(int i = 0; i < ALLMOVES.size(); i++)
@@ -234,17 +235,43 @@ AIMove chessAI::movePicker(std::vector<ChessBoardsForAI> ALLMOVES,int Depth, Tur
                 best = tempTempBoard[a].points;
             }
         }
+        std::vector<ChessBoardsForAI> finalMoves = ALLMOVES;
         int allMovesWinner = 0;
         for(int i = 0; i < ALLMOVES.size();i++)
         {
             if(ALLMOVES[i].cDepth == 1 && ALLMOVES[i].firstId == tempTempBoard[bestA].CBFAI.firstId)
                 allMovesWinner = i;
         }
-
-        move.mX = ALLMOVES[allMovesWinner].mX;
-        move.mY = ALLMOVES[allMovesWinner].mY;
-        move.pieceSelected = ALLMOVES[allMovesWinner].pieceSelected;
-
+        bool isMoveViable = false;
+        while(!isMoveViable)
+        {
+            bool Castle = false;
+            int CastleInt = 0;
+            if(ChessC.moveSim(GameStateOptional, player.Player, finalMoves[allMovesWinner].mX, finalMoves[allMovesWinner].mY, finalMoves[allMovesWinner].pieceSelected, true, Castle, CastleInt))
+            {
+                isMoveViable = true;
+            } else {
+                tempTempBoard.erase(tempTempBoard.begin()+bestA);
+                finalMoves.erase(finalMoves.begin()+bestA);
+                for(int i = 0; i < finalMoves.size();i++)
+                {
+                    if(finalMoves[i].cDepth == 1 && finalMoves[i].firstId == tempTempBoard[bestA].CBFAI.firstId)
+                        allMovesWinner = i;
+                }
+                best = tempTempBoard[0].points;
+                for(int a = 0; a < tempTempBoard.size(); a++)
+                {
+                    if(tempTempBoard[a].points > best)
+                    {
+                        bestA = a;
+                        best = tempTempBoard[a].points;
+                    }
+                }
+            }
+        }
+        move.mX = finalMoves[allMovesWinner].mX;
+        move.mY = finalMoves[allMovesWinner].mY;
+        move.pieceSelected = finalMoves[allMovesWinner].pieceSelected;
     }
     return move;
 }
@@ -269,9 +296,9 @@ std::vector<ChessBoardsForAI> chessAI::moveAI(std::vector<ChessPiece> GameStateO
                 GameState = GameStateOG;
                 Castle = false;
                 CastleInt = 0;
-                if(ChessC.moveSim(GameState, isWhite, i, a, b, true, Castle, CastleInt))
+                if(ChessC.moveSim(GameStateOG, isWhite, i, a, b, true, Castle, CastleInt))
                 {
-                    if(cDepth == 1)
+                    if(cDepth == 0)
                     {
                         moveID = i * 8 * GameState.size() + a * GameState.size() + b;
                     } else {

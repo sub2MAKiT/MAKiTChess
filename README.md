@@ -1,6 +1,6 @@
-# MAKiTChess 0.9.4
+# MAKiTChess 1.0.0
 ---
-This script is still WiP, the documentation will be available soon.
+Beware that this was made by an amateur and for fun, so it should be treated like so.
 
 # Usage:
 For now, in order to compile the code. You can use the ```build.ps1```, I would personally recommend using the ```-fast```, because it shouldn't be causing any bugs and it is making it significantly better for the AI.
@@ -45,3 +45,5 @@ For now, in order to compile the code. You can use the ```build.ps1```, I would 
    - Added the *Smart AI* option.
 ### 0.9.4
    - Improved the *Smart AI*, but only on depth 1.
+### 1.0.0
+   - Finished the script.
