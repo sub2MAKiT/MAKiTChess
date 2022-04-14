@@ -41,9 +41,7 @@ bool chessCheck::moveSim(std::vector<ChessPiece> GameState, bool playerTurn, int
 
             }
             
-        }
-        if(GameState[pieceSelected].Piece == 'R' )
-        {
+        } else if(GameState[pieceSelected].Piece == 'R' ) {
             if(!((mX == GameState[pieceSelected].PositionX && mY == GameState[pieceSelected].PositionY)||!(mX == GameState[pieceSelected].PositionX || mY == GameState[pieceSelected].PositionY)))
                 {
                     if(mX > GameState[pieceSelected].PositionX)
@@ -96,9 +94,7 @@ bool chessCheck::moveSim(std::vector<ChessPiece> GameState, bool playerTurn, int
 
             }
             
-        }
-        if(GameState[pieceSelected].Piece == 'B')
-        {
+        } else if(GameState[pieceSelected].Piece == 'B') {
             if(mX != GameState[pieceSelected].PositionX && mY != GameState[pieceSelected].PositionY)
             {
                 if(abs(mX - GameState[pieceSelected].PositionX) == abs(mY - GameState[pieceSelected].PositionY))
@@ -127,9 +123,7 @@ bool chessCheck::moveSim(std::vector<ChessPiece> GameState, bool playerTurn, int
                 DEBUG("269\n");
 
             }
-        }
-        if(GameState[pieceSelected].Piece == 'C')
-        {
+        } else if(GameState[pieceSelected].Piece == 'C') {
             for(int i = GameState[pieceSelected].PositionX - 2;i <= GameState[pieceSelected].PositionX + 2; i += 1)
             {
                 if(i - GameState[pieceSelected].PositionX != 0)
@@ -146,9 +140,7 @@ bool chessCheck::moveSim(std::vector<ChessPiece> GameState, bool playerTurn, int
                 DEBUG("288\n");
 
             }
-        }
-        if(GameState[pieceSelected].Piece == 'Q')
-        {
+        } else if(GameState[pieceSelected].Piece == 'Q') {
             if(!((mX == GameState[pieceSelected].PositionX && mY == GameState[pieceSelected].PositionY)||!(mX == GameState[pieceSelected].PositionX || mY == GameState[pieceSelected].PositionY)))
                 {
                     if(mX > GameState[pieceSelected].PositionX)
@@ -221,9 +213,7 @@ bool chessCheck::moveSim(std::vector<ChessPiece> GameState, bool playerTurn, int
                 DEBUG("363\n");
 
             }
-        }
-        if(GameState[pieceSelected].Piece == 'K')
-        {
+        } else if(GameState[pieceSelected].Piece == 'K') {
             if((abs(mX - GameState[pieceSelected].PositionX) <= 1 && abs(mY - GameState[pieceSelected].PositionY) <= 1) && (abs(mX - GameState[pieceSelected].PositionX) != 0 || abs(mY - GameState[pieceSelected].PositionY) != 0))
                 move1 = true;
             for(int m = 0; m < GameState.size();m++)
