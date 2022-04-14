@@ -3,9 +3,13 @@
 Beware that this was made by an amateur and for fun, so it should be treated like so.
 
 # Usage:
+## Compiling
 For now, in order to compile the code. You can use the ```build.ps1```, I would personally recommend using the ```-fast```, because it shouldn't be causing any bugs and it is making it significantly better for the AI.
 
 >In order to compile enter the folder ***MAKITCHESS*** *(the file that everything is in)* and only then execute the build.ps1, otherwise the textures won't load.
+
+## Starting
+In order to start the program, execute |start.bat|
 
 # AI
 
