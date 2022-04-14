@@ -9,7 +9,7 @@ For now, in order to compile the code. You can use the ```build.ps1```, I would 
 >In order to compile enter the folder ***MAKITCHESS*** *(the file that everything is in)* and only then execute the build.ps1, otherwise the textures won't load.
 
 ## Starting
-In order to start the program, execute |start.bat|
+In order to start the program, execute ```start.bat```
 
 # AI
 
